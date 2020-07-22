@@ -1,9 +1,11 @@
 {
-  "name": "fs-utils",
+  "name": "yafs",
   "version": "1.0.0",
-  "description": "",
+  "description": "Yet Another FileSystem Abstraction",
   "main": "dist/index.js",
   "scripts": {
+    "pretest": "rimraf .jest-cache",
+    "test-build": "tsc --noEmit",
     "test": "jest",
     "build": "tsc",
     "lint": "tslint -p .",

@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { WriteFileOptions, StatsBase } from "fs";
 import * as path from "path";
+import { EOL } from "os";
 
 const textOptions = { encoding: "utf8" as BufferEncoding };
 
@@ -72,6 +73,10 @@ export async function writeFile(
     });
 }
 
+export type TextWriteFileOptions = WriteFileOptions & {
+    eol: string;
+};
+
 /**
  * Writes the text file at the given location with the provided contents
  * - will create any required supporting folders
@@ -81,9 +86,12 @@ export async function writeFile(
  */
 export function writeTextFile(
     at: string,
-    contents: string,
-    options?: WriteFileOptions
+    contents: string | string[],
+    options?: TextWriteFileOptions
 ): Promise<void> {
+    if (Array.isArray(contents)) {
+        contents = contents.join(options?.eol || "\n");
+    }
     return writeFile(at, Buffer.from(contents), options);
 }
 
