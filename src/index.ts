@@ -165,3 +165,76 @@ export function stat(at: string): Promise<StatsBase<any> | null> {
         }
     });
 }
+
+export enum FsEntities {
+    files = 1,
+    folders= 2,
+    all = 3
+}
+
+export interface LsOptions {
+    fullPaths?: boolean;
+    recurse?: boolean;
+    entities?: FsEntities;
+    match?: RegExp
+}
+
+export async function ls(
+    at: string,
+    opts?: LsOptions
+): Promise<string[]> {
+    const entities = opts?.entities ?? FsEntities.all;
+
+    let result = await lsInternal(at, !!opts?.recurse);
+    if (entities !== FsEntities.all) {
+        const
+            holder: string[] = [],
+            isMatch = entities === FsEntities.files ? fileExists : folderExists;
+        for (const e of result) {
+            const matched = await isMatch(e);
+            if (matched) {
+                holder.push(e);
+            }
+        }
+        result = holder;
+    }
+
+    if (!!(opts?.match)) {
+        const m = opts.match as RegExp;
+        result = result.filter(r => !!r.match(m));
+    }
+
+    if (!opts?.fullPaths) {
+        result = result.map(r => path.relative(at, r));
+    }
+    return result;
+}
+
+function lsInternal(at: string, recurse: boolean): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+        fs.readdir(at, async (err, data: string[]) => {
+            if (err) {
+                return reject(err);
+            }
+            const result: string[] = [];
+            for (const p of data) {
+                const fullPath = prependAt(p);
+                result.push(fullPath);
+                if (recurse && await folderExists(fullPath)) {
+                    const subs = await lsInternal(fullPath, true);
+                    result.push.apply(result, subs);
+                }
+            }
+            resolve(result);
+        });
+    });
+
+    function prependAt(s: string): string {
+        return path.join(at, s);
+    }
+
+}
+
+function passThrough(s: string): string {
+    return s;
+}
