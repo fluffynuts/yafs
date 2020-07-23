@@ -10,6 +10,8 @@ these functions..._
 A (small) collection of common promise-based functions 
 I keep having to write around the `fs` module:
 
+- ls
+  - list contents of folders, with options like recursion and regex-matching
 - readFile
 - readTextFile
   - because I keep having to specify the options and I often want text files, not buffers

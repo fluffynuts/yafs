@@ -168,7 +168,7 @@ export function stat(at: string): Promise<StatsBase<any> | null> {
 
 export enum FsEntities {
     files = 1,
-    folders= 2,
+    folders = 2,
     all = 3
 }
 
@@ -185,32 +185,33 @@ export async function ls(
 ): Promise<string[]> {
     const entities = opts?.entities ?? FsEntities.all;
 
-    let result = await lsInternal(at, !!opts?.recurse);
-    if (entities !== FsEntities.all) {
-        const
-            holder: string[] = [],
-            isMatch = entities === FsEntities.files ? fileExists : folderExists;
-        for (const e of result) {
-            const matched = await isMatch(e);
-            if (matched) {
-                holder.push(e);
-            }
+    const tester = async (fullPath: string) => {
+        let accepted = true;
+        if (entities !== FsEntities.all) {
+            const isMatch = entities === FsEntities.files
+                ? fileExists : folderExists;
+            accepted = accepted && await isMatch(fullPath)
         }
-        result = holder;
-    }
+        if (!!opts?.match) {
+            const re = opts.match as RegExp;
+            accepted = accepted && !!fullPath.match(re)
+        }
+        return accepted;
+    };
 
-    if (!!(opts?.match)) {
-        const m = opts.match as RegExp;
-        result = result.filter(r => !!r.match(m));
-    }
-
-    if (!opts?.fullPaths) {
-        result = result.map(r => path.relative(at, r));
-    }
-    return result;
+    let result = await lsInternal(at, !!opts?.recurse, tester);
+    return opts?.fullPaths
+        ? result
+        : result.map(r => path.relative(at, r));
 }
 
-function lsInternal(at: string, recurse: boolean): Promise<string[]> {
+type PathTester = (at: string) => Promise<boolean>;
+
+function lsInternal(
+    at: string,
+    recurse: boolean,
+    tester: PathTester
+): Promise<string[]> {
     return new Promise((resolve, reject) => {
         fs.readdir(at, async (err, data: string[]) => {
             if (err) {
@@ -219,9 +220,13 @@ function lsInternal(at: string, recurse: boolean): Promise<string[]> {
             const result: string[] = [];
             for (const p of data) {
                 const fullPath = prependAt(p);
-                result.push(fullPath);
+                if (await tester(fullPath)) {
+                    result.push(fullPath);
+                }
+                // even if tester fails, recurs on demand because test may
+                // specifically knock out only stuff in the middle
                 if (recurse && await folderExists(fullPath)) {
-                    const subs = await lsInternal(fullPath, true);
+                    const subs = await lsInternal(fullPath, true, tester);
                     result.push.apply(result, subs);
                 }
             }
