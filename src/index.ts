@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import { WriteFileOptions, StatsBase } from "fs";
 import * as path from "path";
-import { EOL } from "os";
 
 const textOptions = { encoding: "utf8" as BufferEncoding };
 
@@ -237,9 +236,87 @@ function lsInternal(
     function prependAt(s: string): string {
         return path.join(at, s);
     }
-
 }
 
-function passThrough(s: string): string {
-    return s;
+const
+    rmRetries = 50,
+    rmRetryBackoff = 100; // gives up to 5 seconds, with 100ms backoff
+
+export async function rm(at: string): Promise<void> {
+    if (await fileExists(at)) {
+        return retry(() => unlink(at), rmRetries, rmRetryBackoff);
+    }
+    if (await folderExists(at)) {
+        return deltree(at);
+    }
+}
+
+async function deltree(at: string): Promise<void> {
+    const contents = await ls(at, { recurse: true });
+    contents.sort().reverse();
+    for (let p of contents) {
+        const fullPath = path.join(at, p);
+        if (await folderExists(fullPath)) {
+            await rmdir(fullPath);
+        } else {
+            await rm(fullPath);
+        }
+    }
+    await rmdir(at);
+}
+
+type AsyncAction = () => Promise<void>;
+
+async function retry(
+    action: AsyncAction,
+    attempts: number,
+    backoffMs: number) {
+    for (let i = 0; i < attempts; i++) {
+        try {
+            await action();
+            return;
+        } catch (e) {
+            console.error(e);
+            if (i === attempts - 1) {
+                throw e;
+            }
+            await sleep(backoffMs);
+        }
+    }
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
+}
+
+function unlink(at: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        fs.unlink(at, err => {
+            if (isENOENT(err)) {
+                resolve();
+            }
+            return err ? reject(err) : resolve();
+        });
+    });
+}
+
+export function rmdir(at: string): Promise<void> {
+    return retry(() => rmdirInternal(at), rmRetries, rmRetryBackoff);
+}
+
+function isENOENT(err: NodeJS.ErrnoException | null) {
+    return err && err.code === "ENOENT";
+}
+
+function rmdirInternal(at: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+        fs.rmdir(at, err => {
+            if (isENOENT(err)) {
+                resolve();
+            }
+            return err ? reject(err) : resolve();
+        });
+    });
 }
