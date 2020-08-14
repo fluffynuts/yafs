@@ -25,3 +25,7 @@ I keep having to write around the `fs` module:
   - as above
 - exists
   - as above, but doesn't care what the path is if it exists
+- rm
+  - deletes a file or folder (recursive)
+- rmdir
+  - deletes a folder only (will error if the folder isn't empty)

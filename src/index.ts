@@ -198,7 +198,7 @@ export async function ls(
         return accepted;
     };
 
-    let result = await lsInternal(at, !!opts?.recurse, tester);
+    const result = await lsInternal(at, !!opts?.recurse, tester);
     return opts?.fullPaths
         ? result
         : result.map(r => path.relative(at, r));
@@ -254,7 +254,7 @@ export async function rm(at: string): Promise<void> {
 async function deltree(at: string): Promise<void> {
     const contents = await ls(at, { recurse: true });
     contents.sort().reverse();
-    for (let p of contents) {
+    for (const p of contents) {
         const fullPath = path.join(at, p);
         if (await folderExists(fullPath)) {
             await rmdir(fullPath);
