@@ -1,7 +1,7 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
 import * as faker from "faker";
-import { fileExists, rm, rmdir } from "../src";
+import { rm, rmdir } from "../src";
 import * as path from "path";
 
 describe(`rm`, () => {

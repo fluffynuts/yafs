@@ -265,6 +265,48 @@ async function deltree(at: string): Promise<void> {
     await rmdir(at);
 }
 
+export async function rename(
+    at: string,
+    to: string,
+    force?: boolean
+): Promise<void> {
+    if (await exists(to)) {
+        if (force) {
+            await rm(to);
+        } else {
+            throw new Error(`target '${to}' already exists: specify force: true to overwrite`);
+        }
+    }
+    return retry(() =>
+        new Promise((resolve, reject) => {
+            fs.rename(at, to, err => {
+                if (isENOENT(err)) {
+                    return reject(new AbortRetriesError(
+                        err.message,
+                        err
+                    ));
+                }
+                return err
+                    ? reject(err)
+                    : resolve();
+            });
+        }),
+        10,
+        500
+    );
+}
+
+class AbortRetriesError extends Error {
+    error: Error;
+    constructor(
+        message: string,
+        error: Error
+    ) {
+        super(message);
+        this.error = error;
+    }
+}
+
 type AsyncAction = () => Promise<void>;
 
 async function retry(
@@ -276,6 +318,9 @@ async function retry(
             await action();
             return;
         } catch (e) {
+            if (e instanceof AbortRetriesError) {
+                throw e.error;
+            }
             console.error(e);
             if (i === attempts - 1) {
                 throw e;
@@ -306,8 +351,8 @@ export function rmdir(at: string): Promise<void> {
     return retry(() => rmdirInternal(at), rmRetries, rmRetryBackoff);
 }
 
-function isENOENT(err: NodeJS.ErrnoException | null) {
-    return err && err.code === "ENOENT";
+function isENOENT(err: NodeJS.ErrnoException | null): err is NodeJS.ErrnoException {
+    return !!err && err.code === "ENOENT";
 }
 
 function rmdirInternal(at: string): Promise<void> {
