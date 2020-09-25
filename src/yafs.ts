@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { WriteFileOptions, StatsBase } from "fs";
 import * as path from "path";
+import * as os from "os";
 
 const textOptions = { encoding: "utf8" as BufferEncoding };
 
@@ -102,6 +103,15 @@ export function writeTextFile(
 export async function mkdir(at: string): Promise<void> {
     const
         parts = at.split(/[\\|\/]/);
+    if (os.platform() !== "win32" && parts.length > 1) {
+        if (parts[0] === "") {
+            // we were given an absolute path, starting at /
+            // -> need to remove the leading empty part &
+            //    prepend / onto the new leading part
+            parts.splice(0, 1);
+            parts[0] = `/${parts[0]}`;
+        }
+    }
     for (let i = 0; i < parts.length; i++) {
         const current = path.join(...parts.slice(0, i + 1));
         if (await folderExists(current)) {

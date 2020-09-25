@@ -5,7 +5,7 @@ import { mkdir } from "../src/yafs";
 import * as path from "path";
 
 describe(`fs-utils`, () => {
-    describe(`ensureFolderExists`, () => {
+    describe(`mkdir`, () => {
         it(`should create the folder when missing`, async () => {
             jest.setTimeout(120000);
             // Arrange
