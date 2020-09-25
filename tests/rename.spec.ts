@@ -1,5 +1,5 @@
 import "expect-even-more-jest";
-import { rename } from "../src";
+import { rename } from "../src/yafs";
 import { Sandbox } from "filesystem-sandbox";
 import * as faker from "faker";
 import * as path from "path";
