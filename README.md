@@ -32,6 +32,18 @@ I keep having to write around the `fs` module:
   
 ## Examples
 ```javascript
+const {
+  ls,
+  FsEntities,
+  fileExists,
+  folderExists,
+  rm,
+  rmdir,
+  readFile,
+  readTextFile,
+  writeFile,
+  writeTextFile      
+} = require("yafs");
 // ls
 const immediates = await ls("/path/to/folder");
 // ls can take an options parameter
@@ -39,7 +51,7 @@ const immediates = await ls("/path/to/folder");
 const tree = await ls("/path/to/folder", {
   recurse: true,
   fullPaths: true, // provide the full path, including /path/to/folder
-  entities: 3,     // typescript enum: 1 = files, 2 = folders, 3 = all
+  entities: FsEntities.all, // enum: files = 1, folders = 2, all = 3
   match: /\.js$/   // regex to match files you're interested in (*.js here)
 });
 
