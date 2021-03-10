@@ -181,11 +181,30 @@ export enum FsEntities {
     all = 3
 }
 
+export type ErrorHandler = (e: NodeJS.ErrnoException) => Promise<void> | void;
+
 export interface LsOptions {
+    /**
+     * flag: return results as full absolute paths
+     * - set to false or omit to get paths relative
+     *   to the starting point of ls
+     */
     fullPaths?: boolean;
     recurse?: boolean;
+    /**
+     * optional entity type filter (defaults to return files and folders)
+     */
     entities?: FsEntities;
-    match?: RegExp
+    /**
+     * RegEx to match any part of the full path for each entry that is
+     * found whilst traversing the filesystem
+     */
+    match?: RegExp,
+    /**
+     * optional callback: if this is provided, you may suppress errors
+     * whilst reading the filesystem, or re-throw them to stop traversal
+     */
+    onError?: ErrorHandler;
 }
 
 export async function ls(
@@ -208,7 +227,12 @@ export async function ls(
         return accepted;
     };
 
-    const result = await lsInternal(at, !!opts?.recurse, tester);
+    const result = await lsInternal(
+        at,
+        !!opts?.recurse,
+        tester,
+        opts?.onError
+    );
     return opts?.fullPaths
         ? result
         : result.map(r => path.relative(at, r));
@@ -219,12 +243,21 @@ type PathTester = (at: string) => Promise<boolean>;
 function lsInternal(
     at: string,
     recurse: boolean,
-    tester: PathTester
+    tester: PathTester,
+    onError?: ErrorHandler
 ): Promise<string[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         fs.readdir(at, async (err, data: string[]) => {
             if (err) {
-                return reject(err);
+                if (!onError) {
+                    return reject(err);
+                }
+                try {
+                    await onError(err);
+                    return resolve([]);
+                } catch (e) {
+                    return reject(e);
+                }
             }
             const result: string[] = [];
             for (const p of data) {
@@ -235,7 +268,7 @@ function lsInternal(
                 // even if tester fails, recurs on demand because test may
                 // specifically knock out only stuff in the middle
                 if (recurse && await folderExists(fullPath)) {
-                    const subs = await lsInternal(fullPath, true, tester);
+                    const subs = await lsInternal(fullPath, true, tester, onError);
                     result.push.apply(result, subs);
                 }
             }
