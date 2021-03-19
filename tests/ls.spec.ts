@@ -129,4 +129,28 @@ describe(`ls`, () => {
                 expected
             ]);
     });
+
+    it(`should filter on request (full paths #2)`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create();
+        await sandbox.mkdir("src/app");
+        await sandbox.mkdir("__tests__");
+        await sandbox.writeFile("src/index.js", "require('./app');");
+        await sandbox.writeFile("src/app/index.js", "// TODO");
+        await sandbox.writeFile("__tests__/index.spec.js", "// TODO");
+        // Act
+        const result = await ls(sandbox.path, {
+            recurse: true,
+            entities: FsEntities.files,
+            fullPaths: false,
+            match: /^((?!__tests__).)*$/
+        });
+        // Assert
+        expect(result)
+            .toBeEquivalentTo([
+                path.join("src", "index.js"),
+                path.join("src", "app", "index.js")
+            ]);
+    });
 });
