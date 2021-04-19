@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { WriteFileOptions, StatsBase } from "fs";
+import { WriteFileOptions, Stats } from "fs";
 import * as path from "path";
 import * as os from "os";
 
@@ -160,7 +160,7 @@ export async function exists(at: string): Promise<boolean> {
  * - you either get back a stats object or null, never an error
  * @param at
  */
-export function stat(at: string): Promise<StatsBase<any> | null> {
+export function stat(at: string): Promise<Stats | null> {
     return new Promise((resolve) => {
         try {
             fs.stat(at, (err, st) => {
