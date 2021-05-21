@@ -1,8 +1,12 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
 import * as faker from "faker";
-import { readTextFile, writeTextFile } from "../dist";
-import { copyFile, CopyFileOptions } from "../src";
+import {
+    copyFile,
+    CopyFileOptions,
+    readTextFile,
+    writeTextFile
+} from "../src";
 
 describe(`copyFile`, () => {
     describe(`when source doesn't exist`, () => {
