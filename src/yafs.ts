@@ -109,7 +109,7 @@ export async function mkdir(at: string): Promise<void> {
             // -> need to remove the leading empty part &
             //    prepend / onto the new leading part
             parts.splice(0, 1);
-            parts[0] = `/${parts[0]}`;
+            parts[0] = `/${ parts[0] }`;
         }
     }
     for (let i = 0; i < parts.length; i++) {
@@ -317,30 +317,58 @@ export async function rename(
         if (force) {
             await rm(to);
         } else {
-            throw new Error(`target '${to}' already exists: specify force: true to overwrite`);
+            throw new Error(`target '${ to }' already exists: specify force: true to overwrite`);
         }
     }
     return retry(() =>
-        new Promise((resolve, reject) => {
-            fs.rename(at, to, err => {
-                if (isENOENT(err)) {
-                    return reject(new AbortRetriesError(
-                        err.message,
-                        err
-                    ));
-                }
-                return err
-                    ? reject(err)
-                    : resolve();
-            });
-        }),
+            new Promise((resolve, reject) => {
+                fs.rename(at, to, err => {
+                    if (isENOENT(err)) {
+                        return reject(new AbortRetriesError(
+                            err.message,
+                            err
+                        ));
+                    }
+                    return err
+                        ? reject(err)
+                        : resolve();
+                });
+            }),
         10,
         500
     );
 }
 
+export async function copyFile(
+    src: string,
+    target: string,
+    options?: CopyFileOptions
+): Promise<void> {
+    options = options ?? CopyFileOptions.errorOnExisting;
+    if (!(await fileExists(src))) {
+        throw new Error(`file not found at '${src}'`);
+    }
+    if (options !== CopyFileOptions.overwriteExisting &&
+        await fileExists(target)) {
+        throw new Error(`target already exists at '${target}'`);
+    }
+    return new Promise((resolve, reject) => {
+        fs.copyFile(src, target, err => {
+            return err
+                ? reject(err)
+                : resolve();
+        });
+    });
+}
+
+export enum CopyFileOptions {
+    errorOnExisting,
+    overwriteExisting
+}
+
 class AbortRetriesError extends Error {
     error: Error;
+
     constructor(
         message: string,
         error: Error
