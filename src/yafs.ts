@@ -212,6 +212,7 @@ export async function ls(
     opts?: LsOptions
 ): Promise<string[]> {
     const entities = opts?.entities ?? FsEntities.all;
+    at = path.resolve(at);
 
     const tester = async (fullPath: string) => {
         let accepted = true;
@@ -346,11 +347,11 @@ export async function copyFile(
 ): Promise<void> {
     options = options ?? CopyFileOptions.errorOnExisting;
     if (!(await fileExists(src))) {
-        throw new Error(`file not found at '${src}'`);
+        throw new Error(`file not found at '${ src }'`);
     }
     if (options !== CopyFileOptions.overwriteExisting &&
         await fileExists(target)) {
-        throw new Error(`target already exists at '${target}'`);
+        throw new Error(`target already exists at '${ target }'`);
     }
     return new Promise((resolve, reject) => {
         fs.copyFile(src, target, err => {

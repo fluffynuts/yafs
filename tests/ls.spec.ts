@@ -41,6 +41,26 @@ describe(`ls`, () => {
             ]);
     });
 
+    it(`should return full paths on request (even when given relative path)`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create(),
+            folder = faker.random.alphaNumeric(10),
+            file = faker.random.alphaNumeric(10);
+        await sandbox.mkdir(folder);
+        await sandbox.writeFile(file, faker.random.words(10));
+        // Act
+        const result = await sandbox.run(
+            () => ls(".", { fullPaths: true, recurse: true })
+        );
+        // Assert
+        expect(result)
+            .toBeEquivalentTo([
+                sandbox.fullPathFor(file),
+                sandbox.fullPathFor(folder)
+            ]);
+    });
+
     it(`should recurse on request`, async () => {
         // Arrange
         const
