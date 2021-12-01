@@ -1,5 +1,5 @@
 import "expect-even-more-jest";
-import { rename } from "../src/yafs";
+import { rename } from "../src";
 import { Sandbox } from "filesystem-sandbox";
 import * as faker from "faker";
 import * as path from "path";
@@ -173,6 +173,21 @@ describe(`rename`, () => {
         const contents = await sandbox.readTextFile(fileAfterUpdate);
         expect(contents)
             .toEqual(originalData);
+    });
+
+    it(`should do nothing when src and target are the same`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create(),
+            fileName = faker.random.alphaNumeric(10),
+            data = faker.random.words(3),
+            fullPath = sandbox.fullPathFor(fileName);
+        await sandbox.writeFile(fileName, data);
+        // Act
+        await rename(fileName, fileName);
+        // Assert
+        expect(fullPath)
+            .toBeFile();
     });
 
     afterEach(async () => {

@@ -10,14 +10,18 @@ these functions..._
 A (small) collection of common promise-based functions 
 I keep having to write around the `fs` module:
 
-- ls
-  - list contents of folders, with options like recursion and regex-matching
+- copyFile
+  - copy a file, with an option to overwite if existing
+- exists
+  - tests if the path exists (file or folder or other)
 - folderExists
   - tests if a folder exists by path
 - fileExists
   - tests if a file exists by path
-- exists
-  - tests if the path exists (file or folder or other)
+- ls
+  - list contents of folders, with options like recursion and regex-matching
+- mkdir
+  - create a folder (won't error if it already exists)
 - rm
   - deletes a file or folder (recursive)
 - rmdir
@@ -25,6 +29,11 @@ I keep having to write around the `fs` module:
 - readFile
 - readTextFile
   - because I keep having to specify the options and I often want text files, not buffers
+- rename
+  - attempt to rename a file or folder, with retry
+  - if `force` is specified, will remove the target if it already exists
+- stat
+  - attempts to `stat` on a provided path, returns null if the path is not found (no errors)
 - writeFile
 - writeTextFile
   - ensures target folders exist before writing

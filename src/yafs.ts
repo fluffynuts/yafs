@@ -314,6 +314,9 @@ export async function rename(
     to: string,
     force?: boolean
 ): Promise<void> {
+    if (at === to) {
+        return;
+    }
     if (await exists(to)) {
         if (force) {
             await rm(to);
