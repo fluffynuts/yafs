@@ -369,6 +369,10 @@ export async function copyFile(
     if (!(await fileExists(src))) {
         throw new Error(`file not found at '${ src }'`);
     }
+    if (await folderExists(target)) {
+        const baseName = path.basename(src);
+        target = path.join(target, baseName);
+    }
     if (options !== CopyFileOptions.overwriteExisting &&
         await fileExists(target)) {
         throw new Error(`target already exists at '${ target }'`);

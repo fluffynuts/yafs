@@ -7,6 +7,7 @@ import {
     readTextFile,
     writeTextFile
 } from "../src";
+import * as path from "path";
 
 describe(`copyFile`, () => {
     describe(`when source doesn't exist`, () => {
@@ -53,7 +54,7 @@ describe(`copyFile`, () => {
             });
         });
 
-        describe(`when target exists`, () => {
+        describe(`when target _file_ exists`, () => {
             describe(`default behavior`, () => {
                 it(`should throw`, async () => {
                     // Arrange
@@ -108,6 +109,29 @@ describe(`copyFile`, () => {
                         .toBeFile();
                     expect(await readTextFile(targetPath))
                         .toEqual(expected);
+                });
+            });
+        });
+
+        describe(`when target _folder_ exists`, () => {
+            describe(`when target _file_ within _folder_ does not exist`, () => {
+                it(`should copy the file with the same name to the target folder`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        sourceName = faker.random.alphaNumeric(10),
+                        sourcePath = sandbox.fullPathFor(sourceName),
+                        sourceData = faker.random.words(3),
+                        targetName = faker.random.alphaNumeric(10),
+                        targetPath = sandbox.fullPathFor(targetName),
+                        targetFileName = path.join(targetPath, sourceName);
+                    await sandbox.writeFile(sourcePath, sourceData);
+                    await sandbox.mkdir(targetName)
+                    // Act
+                    await copyFile(sourcePath, targetPath);
+                    // Assert
+                    expect(targetFileName)
+                        .toBeFile();
                 });
             });
         });
