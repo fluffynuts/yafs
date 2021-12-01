@@ -32,6 +32,8 @@ I keep having to write around the `fs` module:
 - rename
   - attempt to rename a file or folder, with retry
   - if `force` is specified, will remove the target if it already exists
+- resolveHomePath
+  - resolves a path relative to the user's home for the current platform
 - stat
   - attempts to `stat` on a provided path, returns null if the path is not found (no errors)
 - writeFile

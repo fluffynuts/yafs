@@ -365,6 +365,23 @@ export async function copyFile(
     });
 }
 
+export function findHomeFolder(): string {
+    const
+        environmentVariable = os.platform() === "win32"
+            ? "USERPROFILE"
+            : "HOME",
+        result = process.env[environmentVariable];
+    if (!result) {
+        throw new Error(`Unable to determine user home folder (searched environment variable: ${environmentVariable}`);
+    }
+    return result;
+}
+
+export function resolveHomePath(relative: string): string {
+    const home = findHomeFolder();
+    return path.join(home, relative);
+}
+
 export enum CopyFileOptions {
     errorOnExisting,
     overwriteExisting
