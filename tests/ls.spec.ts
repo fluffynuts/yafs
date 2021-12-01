@@ -173,4 +173,17 @@ describe(`ls`, () => {
                 path.join("src", "app", "index.js")
             ]);
     });
+
+    it(`should return [] when the folder doesn't exist`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create(),
+            folder = faker.random.alphaNumeric(10),
+            fullPath = sandbox.fullPathFor(folder);
+        // Act
+        const result = await ls(fullPath);
+        // Assert
+        expect(result)
+            .toEqual([]);
+    });
 });

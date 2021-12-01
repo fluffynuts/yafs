@@ -205,12 +205,29 @@ export interface LsOptions {
      * whilst reading the filesystem, or re-throw them to stop traversal
      */
     onError?: ErrorHandler;
+
+    /**
+     * optional (defaults to false): typically if the target of an ls invocation
+     * does not exist, you should get back an empty set of results (you could always
+     * check on existence if you want to with folderExists), but if you really want
+     * the ENOENT to bubble up, set this to true
+     */
+    throwOnMissingTarget?: boolean;
 }
 
 export async function ls(
     at: string,
     opts?: LsOptions
 ): Promise<string[]> {
+    const ignoreMissing = !(opts?.throwOnMissingTarget ?? false);
+    if (ignoreMissing) {
+        const atExists = await exists(at);
+        if (!atExists) {
+            // prefer empty results over explosions
+            return [];
+        }
+    }
+
     const entities = opts?.entities ?? FsEntities.all;
     at = path.resolve(at);
 
