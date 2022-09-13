@@ -1,7 +1,7 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
-import * as faker from "faker";
-import { readTextFile } from "../src/yafs";
+import { faker } from "@faker-js/faker";
+import { readTextFile } from "../src";
 
 describe(`fs-utils`, () => {
     describe(`readTextFile`, () => {

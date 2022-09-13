@@ -1,7 +1,7 @@
 import "expect-even-more-jest";
 import { rename } from "../src";
 import { Sandbox } from "filesystem-sandbox";
-import * as faker from "faker";
+import { faker } from "@faker-js/faker";
 import * as path from "path";
 
 describe(`rename`, () => {

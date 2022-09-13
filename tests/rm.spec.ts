@@ -1,6 +1,6 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
-import * as faker from "faker";
+import { faker } from "@faker-js/faker";
 import { rm, rmdir } from "../src/yafs";
 import * as path from "path";
 

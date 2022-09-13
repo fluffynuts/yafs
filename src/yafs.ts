@@ -199,7 +199,7 @@ export interface LsOptions {
      * RegEx to match any part of the full path for each entry that is
      * found whilst traversing the filesystem
      */
-    match?: RegExp,
+    match?: RegExp | RegExp[],
     /**
      * optional callback: if this is provided, you may suppress errors
      * whilst reading the filesystem, or re-throw them to stop traversal
@@ -213,6 +213,15 @@ export interface LsOptions {
      * the ENOENT to bubble up, set this to true
      */
     throwOnMissingTarget?: boolean;
+}
+
+function resolveMatches(opts?: LsOptions): RegExp[] {
+    if (!opts || !opts.match) {
+        return [];
+    }
+    return Array.isArray(opts.match)
+        ? opts.match
+        : [ opts.match ]
 }
 
 export async function ls(
@@ -231,6 +240,8 @@ export async function ls(
     const entities = opts?.entities ?? FsEntities.all;
     at = path.resolve(at);
 
+    const matches = resolveMatches(opts);
+
     const tester = async (fullPath: string) => {
         let accepted = true;
         if (entities !== FsEntities.all) {
@@ -238,11 +249,12 @@ export async function ls(
                 ? fileExists : folderExists;
             accepted = accepted && await isMatch(fullPath)
         }
-        if (!!opts?.match) {
-            const re = opts.match as RegExp;
-            accepted = accepted && !!fullPath.match(re)
+        const relativePath = path.relative(at, fullPath);
+        let matched = !matches.length;
+        for (const m of matches) {
+            matched = matched || !!relativePath.match(m);
         }
-        return accepted;
+        return accepted && matched;
     };
 
     const result = await lsInternal(
@@ -393,7 +405,7 @@ export function findHomeFolder(): string {
             : "HOME",
         result = process.env[environmentVariable];
     if (!result) {
-        throw new Error(`Unable to determine user home folder (searched environment variable: ${environmentVariable}`);
+        throw new Error(`Unable to determine user home folder (searched environment variable: ${ environmentVariable }`);
     }
     return result;
 }

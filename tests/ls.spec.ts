@@ -1,7 +1,7 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
-import * as faker from "faker";
-import { FsEntities, ls } from "../src/yafs";
+import { faker } from "@faker-js/faker";
+import { FsEntities, ls } from "../src";
 import * as path from "path";
 
 describe(`ls`, () => {
@@ -15,6 +15,24 @@ describe(`ls`, () => {
         await sandbox.writeFile(file, faker.random.words(10));
         // Act
         const result = await ls(sandbox.path);
+        // Assert
+        expect(result)
+            .toBeEquivalentTo([
+                file,
+                folder
+            ]);
+    });
+
+    it(`should return all files and folders in the special folder . by default`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create(),
+            folder = faker.random.alphaNumeric(10),
+            file = faker.random.alphaNumeric(10);
+        await sandbox.mkdir(folder);
+        await sandbox.writeFile(file, faker.random.words(10));
+        // Act
+        const result = await sandbox.run(async () => await ls("."));
         // Assert
         expect(result)
             .toBeEquivalentTo([
@@ -174,6 +192,24 @@ describe(`ls`, () => {
             ]);
     });
 
+    it(`should allow multiple filters`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create();
+        await sandbox.mkdir("include1");
+        await sandbox.mkdir("include2");
+        await sandbox.mkdir("exclude1");
+        await sandbox.mkdir("exclude2");
+        await sandbox.writeFile("include1/file1", faker.random.words())
+        // Act
+        const result = await sandbox.run(async () => {
+            return await ls(".", { match: [ /include/, /exclude/ ], recurse: true })
+        });
+        // Assert
+        expect(result)
+            .toHaveLength(5);
+    });
+
     it(`should return [] when the folder doesn't exist`, async () => {
         // Arrange
         const
@@ -185,5 +221,19 @@ describe(`ls`, () => {
         // Assert
         expect(result)
             .toEqual([]);
+    });
+
+    it(`should filter against the relative path`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create();
+        await sandbox.mkdir("foo.bar.quux.1.2.3");
+        // Act
+        const result = await sandbox.run(async () => {
+            return await ls(".", { match: /^foo\.bar\.quux\.\d+\.\d+\.\d+$/ });
+        });
+        // Assert
+        expect(result)
+            .toHaveLength(1);
     });
 });
