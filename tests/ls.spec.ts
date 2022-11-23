@@ -236,4 +236,42 @@ describe(`ls`, () => {
         expect(result)
             .toHaveLength(1);
     });
+
+    it(`should respect max-depth setting`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create();
+        await sandbox.mkdir("foo/bar/quux");
+        // Act
+        const result = await sandbox.run(async () => {
+            return await ls(".", { recurse: true, maxDepth: 2 });
+        });
+        // Assert
+        expect(result)
+            .toContain("foo");
+        expect(result)
+            .toContain(path.join("foo", "bar"));
+        expect(result)
+            .not.toContain(path.join("foo", "bar", "quux"));
+    });
+
+    it(`should stop traversal if it hits an ignored folder`, async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create();
+        await sandbox.mkdir("foo/node_modules/some-module/js");
+        // Act
+        const result = await sandbox.run(async () => {
+            return await ls(".", { recurse: true, doNotTraverse: /node_modules/ } );
+        });
+        // Assert
+        expect(result)
+            .toContain("foo");
+        expect(result)
+            .toContain(path.join("foo", "node_modules")); // it's not mismatched - we just don't traverse it
+        expect(result)
+            .not.toContain(path.join("foo", "node_modules", "some-module"));
+        expect(result)
+            .not.toContain(path.join("foo", "node_modules", "some-module", "js"));
+    });
 });

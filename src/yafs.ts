@@ -200,6 +200,12 @@ export interface LsOptions {
      * found whilst traversing the filesystem
      */
     match?: RegExp | RegExp[],
+
+    /**
+     * One or more regular expressions for folders to ignore. Ignored
+     * paths will not be traversed during recursive operations.
+     */
+    doNotTraverse?: RegExp | RegExp[],
     /**
      * optional callback: if this is provided, you may suppress errors
      * whilst reading the filesystem, or re-throw them to stop traversal
@@ -213,10 +219,16 @@ export interface LsOptions {
      * the ENOENT to bubble up, set this to true
      */
     throwOnMissingTarget?: boolean;
+
+    /**
+     * optional: when recurse is specified, traverse no deeper than
+     * this into the filesystem
+     */
+    maxDepth?: number;
 }
 
-function resolveMatches(opts?: LsOptions): RegExp[] {
-    if (!opts || !opts.match) {
+function resolveMatches(opts: LsOptions): RegExp[] {
+    if (!opts.match) {
         return [];
     }
     return Array.isArray(opts.match)
@@ -224,11 +236,26 @@ function resolveMatches(opts?: LsOptions): RegExp[] {
         : [ opts.match ]
 }
 
+function makeSafeArray<T>(items: T[] | T | undefined): T[] {
+    if (items === undefined) {
+        return [];
+    }
+    return Array.isArray(items)
+        ? items
+        : [ items ];
+}
+
+const defaultLsOptions = {
+    entities: FsEntities.all,
+    throwOnMissingTarget: false
+} as LsOptions;
+
 export async function ls(
     at: string,
     opts?: LsOptions
 ): Promise<string[]> {
-    const ignoreMissing = !(opts?.throwOnMissingTarget ?? false);
+    const options = { ...defaultLsOptions, ...opts };
+    const ignoreMissing = !options.throwOnMissingTarget;
     if (ignoreMissing) {
         const atExists = await exists(at);
         if (!atExists) {
@@ -237,10 +264,12 @@ export async function ls(
         }
     }
 
-    const entities = opts?.entities ?? FsEntities.all;
+    const { entities } = options;
+
     at = path.resolve(at);
 
-    const matches = resolveMatches(opts);
+    const matches = resolveMatches(options);
+    options.doNotTraverse = makeSafeArray(options.doNotTraverse);
 
     const tester = async (fullPath: string) => {
         let accepted = true;
@@ -259,9 +288,8 @@ export async function ls(
 
     const result = await lsInternal(
         at,
-        !!opts?.recurse,
         tester,
-        opts?.onError
+        options
     );
     return opts?.fullPaths
         ? result
@@ -272,10 +300,18 @@ type PathTester = (at: string) => Promise<boolean>;
 
 function lsInternal(
     at: string,
-    recurse: boolean,
     tester: PathTester,
-    onError?: ErrorHandler
+    opts: LsOptions,
+    currentDepth?: number
 ): Promise<string[]> {
+    if (currentDepth === undefined) {
+        currentDepth = 0;
+    }
+    currentDepth++;
+    const { maxDepth, onError, recurse } = opts;
+    if (maxDepth !== undefined && currentDepth > maxDepth) {
+        return Promise.resolve([]);
+    }
     return new Promise(async (resolve, reject) => {
         fs.readdir(at, async (err, data: string[]) => {
             if (err) {
@@ -295,10 +331,30 @@ function lsInternal(
                 if (await tester(fullPath)) {
                     result.push(fullPath);
                 }
+                if (!recurse) {
+                    continue;
+                }
+                // caller sanitises
+                const noTraverse = opts.doNotTraverse as RegExp[];
+                let skip = false;
+                for (const re of noTraverse) {
+                    if (fullPath.match(re)) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) {
+                    continue;
+                }
                 // even if tester fails, recurs on demand because test may
                 // specifically knock out only stuff in the middle
-                if (recurse && await folderExists(fullPath)) {
-                    const subs = await lsInternal(fullPath, true, tester, onError);
+                if (await folderExists(fullPath)) {
+                    const subs = await lsInternal(
+                        fullPath,
+                        tester,
+                        opts,
+                        currentDepth
+                    );
                     result.push.apply(result, subs);
                 }
             }
