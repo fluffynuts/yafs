@@ -147,6 +147,19 @@ export async function folderExists(at: string): Promise<boolean> {
 }
 
 /**
+ * Tests if the given path is a folder
+ * @param at
+ */
+export function folderExistsSync(at: string): boolean {
+    try {
+        const st = statSync(at);
+        return !!st && st.isDirectory();
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
  * Tests if the given path is a file
  * @param at
  */
@@ -156,12 +169,37 @@ export async function fileExists(at: string): Promise<boolean> {
 }
 
 /**
+ * Tests if the given path is a file
+ * @param at
+ */
+export function fileExistsSync(at: string): boolean {
+    try {
+        const st = statSync(at);
+        return !!st && st.isFile();
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
  * Tests if the given path exists at all (could be a folder, file, FIFO, whatever)
  * @param at
  */
 export async function exists(at: string): Promise<boolean> {
     const st = await stat(at);
     return !!st;
+}
+
+/**
+ * Tests if the given path exists at all (could be a folder, file, FIFO, whatever)
+ * @param at
+ */
+export function existsSync(at: string): boolean {
+    try {
+        return !!fs.statSync(at);
+    } catch (e) {
+        return false;
+    }
 }
 
 /**
@@ -182,6 +220,19 @@ export function stat(at: string): Promise<Stats | null> {
             resolve(null);
         }
     });
+}
+
+/**
+ * Provides a safe, synchronous wrapper around fs.statSync
+ * - you either get back a stats object or null, never an error
+ * @param at
+ */
+export function statSync(at: string): Stats | null {
+    try {
+        return fs.statSync(at)
+    } catch (e) {
+        return null;
+    }
 }
 
 export enum FsEntities {
