@@ -46,6 +46,15 @@ export function readTextFile(at: string): Promise<string> {
 }
 
 /**
+ * Convenience: wrapper around fs.readFileSync with text file options
+ * - you should only select this if you have no option to go async
+ * @param at
+ */
+export function readTextFileSync(at: string): string {
+    return fs.readFileSync(at, textOptions);
+}
+
+/**
  * Writes the file at the given location with the provided contents
  * - will create any required supporting folders
  * @param at
