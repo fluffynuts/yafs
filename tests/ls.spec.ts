@@ -9,10 +9,10 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10);
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(file, faker.random.words(10));
+        await sandbox.writeFile(file, faker.word.sample(10));
         // Act
         const result = await ls(sandbox.path);
         // Assert
@@ -27,10 +27,10 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10);
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(file, faker.random.words(10));
+        await sandbox.writeFile(file, faker.word.sample(10));
         // Act
         const result = await sandbox.run(async () => await ls("."));
         // Assert
@@ -45,10 +45,10 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10);
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(file, faker.random.words(10));
+        await sandbox.writeFile(file, faker.word.sample(10));
         // Act
         const result = await ls(sandbox.path, { fullPaths: true });
         // Assert
@@ -63,10 +63,10 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10);
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(file, faker.random.words(10));
+        await sandbox.writeFile(file, faker.word.sample(10));
         // Act
         const result = await sandbox.run(
             () => ls(".", { fullPaths: true, recurse: true })
@@ -83,11 +83,11 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10),
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10),
             relPath = path.join(folder, file);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(relPath, faker.random.words());
+        await sandbox.writeFile(relPath, faker.word.sample());
         // Act
         const result = await ls(sandbox.path, { recurse: true });
         // Assert
@@ -102,11 +102,11 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file = faker.random.alphaNumeric(10),
+            folder = faker.string.alphanumeric(10),
+            file = faker.string.alphanumeric(10),
             relPath = path.join(folder, file);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(relPath, faker.random.words());
+        await sandbox.writeFile(relPath, faker.word.sample());
         // Act
         const result = await ls(sandbox.path, { recurse: true, entities: FsEntities.files });
         // Assert
@@ -126,9 +126,9 @@ describe(`ls`, () => {
             otherFile = "file2.txt",
             rel1 = path.join(folder, file1),
             rel2 = path.join(folder, file2);
-        await sandbox.writeFile(rel1, faker.random.words());
-        await sandbox.writeFile(rel2, faker.random.words());
-        await sandbox.writeFile(otherFile, faker.random.words());
+        await sandbox.writeFile(rel1, faker.word.sample());
+        await sandbox.writeFile(rel2, faker.word.sample());
+        await sandbox.writeFile(otherFile, faker.word.sample());
         // Act
         const result = await ls(sandbox.path, {
             recurse: true,
@@ -152,9 +152,9 @@ describe(`ls`, () => {
             rel1 = path.join(folder, file1),
             rel2 = path.join(folder, file2),
             expected = sandbox.fullPathFor(rel2);
-        await sandbox.writeFile(rel1, faker.random.words());
-        await sandbox.writeFile(rel2, faker.random.words());
-        await sandbox.writeFile(otherFile, faker.random.words());
+        await sandbox.writeFile(rel1, faker.word.sample());
+        await sandbox.writeFile(rel2, faker.word.sample());
+        await sandbox.writeFile(otherFile, faker.word.sample());
         // Act
         const result = await ls(sandbox.path, {
             recurse: true,
@@ -200,7 +200,7 @@ describe(`ls`, () => {
         await sandbox.mkdir("include2");
         await sandbox.mkdir("exclude1");
         await sandbox.mkdir("exclude2");
-        await sandbox.writeFile("include1/file1", faker.random.words())
+        await sandbox.writeFile("include1/file1", faker.word.sample())
         // Act
         const result = await sandbox.run(async () => {
             return await ls(".", { match: [ /include/, /exclude/ ], recurse: true })
@@ -214,7 +214,7 @@ describe(`ls`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
+            folder = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(folder);
         // Act
         const result = await ls(fullPath);

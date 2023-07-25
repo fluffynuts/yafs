@@ -45,6 +45,12 @@ export function readTextFile(at: string): Promise<string> {
     });
 }
 
+export async function readTextFileLines(at: string): Promise<string[]> {
+    return splitIntoLines(
+        await readTextFile(at)
+    );
+}
+
 /**
  * Convenience: wrapper around fs.readFileSync with text file options
  * - you should only select this if you have no option to go async
@@ -52,6 +58,18 @@ export function readTextFile(at: string): Promise<string> {
  */
 export function readTextFileSync(at: string): string {
     return fs.readFileSync(at, textOptions);
+}
+
+export function readTextFileLinesSync(at: string): string[] {
+    return splitIntoLines(
+        readTextFileSync(at)
+    );
+}
+
+function splitIntoLines(str: string) {
+    return str.indexOf("\r\n") > -1
+        ? str.split(/\r\n/)
+        : str.split(/\n/);
 }
 
 /**

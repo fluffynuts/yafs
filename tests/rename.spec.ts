@@ -17,11 +17,11 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            fileName = faker.random.alphaNumeric(10),
+            fileName = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(fileName),
-            newName = faker.random.alphaNumeric(10),
+            newName = faker.string.alphanumeric(10),
             fullNewPath = sandbox.fullPathFor(newName),
-            data = faker.random.words(3);
+            data = faker.word.sample(3);
         await sandbox.writeFile(fileName, data);
         expect(fullPath)
             .toBeFile();
@@ -43,9 +43,9 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(original),
-            newName = faker.random.alphaNumeric(10),
+            newName = faker.string.alphanumeric(10),
             fullNewPath = sandbox.fullPathFor(newName);
         await sandbox.mkdir(original);
         expect(fullPath)
@@ -65,9 +65,9 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(original),
-            newName = faker.random.alphaNumeric(10),
+            newName = faker.string.alphanumeric(10),
             newFullPath = sandbox.fullPathFor(newName);
         // Act
         const start = Date.now();
@@ -82,12 +82,12 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(original),
-            newName = faker.random.alphaNumeric(10),
+            newName = faker.string.alphanumeric(10),
             newFullPath = sandbox.fullPathFor(newName);
-        await sandbox.writeFile(original, faker.random.words());
-        await sandbox.writeFile(newName, faker.random.words());
+        await sandbox.writeFile(original, faker.word.sample());
+        await sandbox.writeFile(newName, faker.word.sample());
         // Act
         const start = Date.now();
         await expect(rename(fullPath, newFullPath))
@@ -101,13 +101,13 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(original),
-            newName = faker.random.alphaNumeric(10),
-            data = faker.random.words(3),
+            newName = faker.string.alphanumeric(10),
+            data = faker.word.sample(3),
             newFullPath = sandbox.fullPathFor(newName);
         await sandbox.writeFile(original, data);
-        await sandbox.writeFile(newName, faker.random.words());
+        await sandbox.writeFile(newName, faker.word.sample());
         // Act
         await rename(fullPath, newFullPath, true);
         // Assert
@@ -124,10 +124,10 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(original),
-            newName = faker.random.alphaNumeric(10),
-            data = faker.random.words(3),
+            newName = faker.string.alphanumeric(10),
+            data = faker.word.sample(3),
             newFullPath = sandbox.fullPathFor(newName);
         await sandbox.writeFile(original, data);
         await sandbox.mkdir(newName);
@@ -147,17 +147,17 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            original = faker.random.alphaNumeric(10),
-            originalFilename = faker.random.alphaNumeric(10),
+            original = faker.string.alphanumeric(10),
+            originalFilename = faker.string.alphanumeric(10),
             originalFile = path.join(original, originalFilename),
-            originalData = faker.random.words(3),
-            targetFolder = faker.random.alphaNumeric(10),
-            targetFile = path.join(targetFolder, faker.random.alphaNumeric(10)),
+            originalData = faker.word.sample(3),
+            targetFolder = faker.string.alphanumeric(10),
+            targetFile = path.join(targetFolder, faker.string.alphanumeric(10)),
             fileAfterUpdate = sandbox.fullPathFor(path.join(targetFolder, originalFilename)),
             originalFullPath = sandbox.fullPathFor(original),
             targetFullPath = sandbox.fullPathFor(targetFolder);
         await sandbox.writeFile(originalFile, originalData);
-        await sandbox.writeFile(targetFile, faker.random.words());
+        await sandbox.writeFile(targetFile, faker.word.sample());
 
         expect(sandbox.fullPathFor(originalFile))
             .toBeFile();
@@ -179,8 +179,8 @@ describe(`rename`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            fileName = faker.random.alphaNumeric(10),
-            data = faker.random.words(3),
+            fileName = faker.string.alphanumeric(10),
+            data = faker.word.sample(3),
             fullPath = sandbox.fullPathFor(fileName);
         await sandbox.writeFile(fileName, data);
         // Act

@@ -10,7 +10,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act
@@ -23,7 +23,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = await folderExists(fullPath);
@@ -35,9 +35,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = await folderExists(fullPath);
                 // Assert
@@ -50,7 +50,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act
@@ -63,7 +63,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = folderExistsSync(fullPath);
@@ -75,9 +75,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = folderExistsSync(fullPath);
                 // Assert
@@ -90,9 +90,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = await fileExists(fullPath);
                 // Assert
@@ -103,7 +103,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act
@@ -116,7 +116,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = await fileExists(fullPath);
@@ -130,9 +130,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = fileExistsSync(fullPath);
                 // Assert
@@ -143,7 +143,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act
@@ -156,7 +156,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = fileExistsSync(fullPath);
@@ -170,7 +170,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = await exists(fullPath);
@@ -182,9 +182,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = await exists(fullPath);
                 // Assert
@@ -195,7 +195,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act
@@ -210,7 +210,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 // Act
                 const result = existsSync(fullPath);
@@ -222,9 +222,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
-                await sandbox.writeFile(p, faker.random.words(10));
+                await sandbox.writeFile(p, faker.word.sample(10));
                 // Act
                 const result = existsSync(fullPath);
                 // Assert
@@ -235,7 +235,7 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    p = faker.random.alphaNumeric(10),
+                    p = faker.string.alphanumeric(10),
                     fullPath = sandbox.fullPathFor(p);
                 await sandbox.mkdir(p);
                 // Act

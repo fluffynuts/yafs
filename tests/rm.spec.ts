@@ -9,7 +9,7 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            fileName = faker.random.alphaNumeric(10),
+            fileName = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(fileName);
         // Act
         await expect(rm(fullPath))
@@ -21,9 +21,9 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            fileName = faker.random.alphaNumeric(10),
+            fileName = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(fileName),
-            contents = faker.random.words(3);
+            contents = faker.word.sample(3);
         await sandbox.writeFile(fileName, contents);
         expect(fullPath)
             .toBeFile();
@@ -38,7 +38,7 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folderName = faker.random.alphaNumeric(10),
+            folderName = faker.string.alphanumeric(10),
             fullPath = sandbox.fullPathFor(folderName);
         await sandbox.mkdir(folderName);
         expect(fullPath)
@@ -54,12 +54,12 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder = faker.random.alphaNumeric(10),
-            file1 = faker.random.alphaNumeric(10),
-            file2 = faker.random.alphaNumeric(10);
+            folder = faker.string.alphanumeric(10),
+            file1 = faker.string.alphanumeric(10),
+            file2 = faker.string.alphanumeric(10);
         await sandbox.mkdir(folder);
-        await sandbox.writeFile(path.join(folder, file1), faker.random.words(3));
-        await sandbox.writeFile(path.join(folder, file2), faker.random.words(3));
+        await sandbox.writeFile(path.join(folder, file1), faker.word.sample(3));
+        await sandbox.writeFile(path.join(folder, file2), faker.word.sample(3));
         expect(sandbox.path)
             .toBeFolder();
         // Act
@@ -73,19 +73,19 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folder1 = faker.random.alphaNumeric(10),
-            folder2 = faker.random.alphaNumeric(10),
-            folder3 = faker.random.alphaNumeric(10),
-            file1 = faker.random.alphaNumeric(10),
-            file2 = faker.random.alphaNumeric(10),
+            folder1 = faker.string.alphanumeric(10),
+            folder2 = faker.string.alphanumeric(10),
+            folder3 = faker.string.alphanumeric(10),
+            file1 = faker.string.alphanumeric(10),
+            file2 = faker.string.alphanumeric(10),
             file1Path = path.join(folder1, folder2, folder3, file1),
             file2Path = path.join(folder1, folder2, file2),
             file1FullPath = sandbox.fullPathFor(file1Path),
             file2FullPath = sandbox.fullPathFor(file2Path),
             folder1Path = sandbox.fullPathFor(folder1);
         await sandbox.mkdir(path.join(folder1, folder2, folder3));
-        await sandbox.writeFile(file1Path, faker.random.words(3));
-        await sandbox.writeFile(file2Path, faker.random.words(3));
+        await sandbox.writeFile(file1Path, faker.word.sample(3));
+        await sandbox.writeFile(file2Path, faker.word.sample(3));
         expect(file1FullPath)
             .toBeFile();
         expect(file2FullPath)
@@ -101,7 +101,7 @@ describe(`rm`, () => {
         // Arrange
         const
             sandbox = await Sandbox.create(),
-            folderName = faker.random.alphaNumeric(10),
+            folderName = faker.string.alphanumeric(10),
             folderPath = sandbox.fullPathFor(folderName);
         // Act
         await expect(rmdir(folderPath))

@@ -15,8 +15,8 @@ describe(`copyFile`, () => {
             // Arrange
             const
                 sandbox = await Sandbox.create(),
-                src = faker.random.alphaNumeric(12),
-                target = faker.random.alphaNumeric(12),
+                src = faker.string.alphanumeric(12),
+                target = faker.string.alphanumeric(12),
                 srcPath = sandbox.fullPathFor(src),
                 targetPath = sandbox.fullPathFor(target);
             expect(srcPath)
@@ -33,10 +33,10 @@ describe(`copyFile`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    src = faker.random.alphaNumeric(12),
-                    target = faker.random.alphaNumeric(12),
+                    src = faker.string.alphanumeric(12),
+                    target = faker.string.alphanumeric(12),
                     targetPath = sandbox.fullPathFor(target),
-                    expected = faker.random.words(32);
+                    expected = faker.word.sample(32);
                 await sandbox.writeFile(src, expected);
                 expect(targetPath)
                     .not.toBeFile();
@@ -60,12 +60,12 @@ describe(`copyFile`, () => {
                     // Arrange
                     const
                         sandbox = await Sandbox.create(),
-                        src = faker.random.alphaNumeric(12),
-                        target = faker.random.alphaNumeric(12),
+                        src = faker.string.alphanumeric(12),
+                        target = faker.string.alphanumeric(12),
                         srcPath = sandbox.fullPathFor(src),
                         targetPath = sandbox.fullPathFor(target);
-                    await writeTextFile(srcPath, faker.random.words());
-                    await writeTextFile(targetPath, faker.random.words());
+                    await writeTextFile(srcPath, faker.word.sample());
+                    await writeTextFile(targetPath, faker.word.sample());
                     // Act
                     await expect(copyFile(srcPath, targetPath))
                         .rejects.toThrow(/target already exists/);
@@ -77,12 +77,12 @@ describe(`copyFile`, () => {
                     // Arrange
                     const
                         sandbox = await Sandbox.create(),
-                        src = faker.random.alphaNumeric(12),
-                        target = faker.random.alphaNumeric(12),
+                        src = faker.string.alphanumeric(12),
+                        target = faker.string.alphanumeric(12),
                         srcPath = sandbox.fullPathFor(src),
                         targetPath = sandbox.fullPathFor(target);
-                    await writeTextFile(srcPath, faker.random.words());
-                    await writeTextFile(targetPath, faker.random.words());
+                    await writeTextFile(srcPath, faker.word.sample());
+                    await writeTextFile(targetPath, faker.word.sample());
                     // Act
                     await expect(copyFile(srcPath, targetPath, CopyFileOptions.errorOnExisting))
                         .rejects.toThrow(/target already exists/);
@@ -94,12 +94,12 @@ describe(`copyFile`, () => {
                     // Arrange
                     const
                         sandbox = await Sandbox.create(),
-                        src = faker.random.alphaNumeric(12),
-                        target = faker.random.alphaNumeric(12),
+                        src = faker.string.alphanumeric(12),
+                        target = faker.string.alphanumeric(12),
                         srcPath = sandbox.fullPathFor(src),
                         targetPath = sandbox.fullPathFor(target),
-                        expected = faker.random.words(10),
-                        unexpected = faker.random.words(10);
+                        expected = faker.word.sample(10),
+                        unexpected = faker.word.sample(10);
                     await writeTextFile(srcPath, expected);
                     await writeTextFile(targetPath, unexpected);
                     // Act
@@ -119,10 +119,10 @@ describe(`copyFile`, () => {
                     // Arrange
                     const
                         sandbox = await Sandbox.create(),
-                        sourceName = faker.random.alphaNumeric(10),
+                        sourceName = faker.string.alphanumeric(10),
                         sourcePath = sandbox.fullPathFor(sourceName),
-                        sourceData = faker.random.words(3),
-                        targetName = faker.random.alphaNumeric(10),
+                        sourceData = faker.word.sample(3),
+                        targetName = faker.string.alphanumeric(10),
                         targetPath = sandbox.fullPathFor(targetName),
                         targetFileName = path.join(targetPath, sourceName);
                     await sandbox.writeFile(sourcePath, sourceData);

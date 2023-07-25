@@ -10,10 +10,10 @@ describe(`fs-utils`, () => {
             // Arrange
             const
                 sandbox = await Sandbox.create(),
-                dir = faker.random.alphaNumeric(10),
-                filename = faker.random.alphaNumeric(10),
+                dir = faker.string.alphanumeric(10),
+                filename = faker.string.alphanumeric(10),
                 fullPath = sandbox.fullPathFor(dir, filename),
-                buffer = Buffer.from(faker.random.words(10));
+                buffer = Buffer.from(faker.word.sample(10));
             // Act
             await writeFile(fullPath, buffer);
             const result = await readFile(fullPath);
@@ -31,8 +31,8 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    fname = faker.random.alphaNumeric(10),
-                    expected = faker.random.words(10),
+                    fname = faker.string.alphanumeric(10),
+                    expected = faker.word.sample(10),
                     fpath = sandbox.fullPathFor(fname);
                 // Act
                 await writeTextFile(fpath, expected);
@@ -45,9 +45,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    fname = faker.random.alphaNumeric(10),
-                    first = faker.random.words(10),
-                    expected = faker.random.words(10),
+                    fname = faker.string.alphanumeric(10),
+                    first = faker.word.sample(10),
+                    expected = faker.word.sample(10),
                     fpath = sandbox.fullPathFor(fname);
                 // Act
                 await writeTextFile(fpath, first);
@@ -63,9 +63,9 @@ describe(`fs-utils`, () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
-                    dir = faker.random.alphaNumeric(10),
-                    expected = faker.random.words(10),
-                    fullPath = sandbox.fullPathFor(path.join(dir, faker.random.alphaNumeric(10)));
+                    dir = faker.string.alphanumeric(10),
+                    expected = faker.word.sample(10),
+                    fullPath = sandbox.fullPathFor(path.join(dir, faker.string.alphanumeric(10)));
                 // Act
                 await writeTextFile(fullPath, expected);
                 const result = await readTextFile(fullPath);

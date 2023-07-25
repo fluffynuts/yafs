@@ -35,7 +35,7 @@
     "dist/**/*"
   ],
   "devDependencies": {
-    "@faker-js/faker": "^7.5.0",
+    "@faker-js/faker": "^8.0.2",
     "@types/jest": "^26.0.5",
     "console-cls": "^1.2.2",
     "cross-env": "^7.0.2",

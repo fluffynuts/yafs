@@ -11,7 +11,7 @@ describe(`fs-utils`, () => {
             // Arrange
             const
                 sandbox = await Sandbox.create(),
-                folder = faker.random.alphaNumeric(10),
+                folder = faker.string.alphanumeric(10),
                 fullPath = sandbox.fullPathFor(folder);
             // Act
             await mkdir(fullPath);
@@ -23,8 +23,8 @@ describe(`fs-utils`, () => {
             // Arrange
             const
                 sandbox = await Sandbox.create(),
-                folder = faker.random.alphaNumeric(10),
-                sub = faker.random.alphaNumeric(10),
+                folder = faker.string.alphanumeric(10),
+                sub = faker.string.alphanumeric(10),
                 fullPath = sandbox.fullPathFor(folder, sub);
             // Act
             await mkdir(path.join(fullPath));
@@ -36,8 +36,8 @@ describe(`fs-utils`, () => {
             // Arrange
             const
                 sandbox = await Sandbox.create(),
-                folder = faker.random.alphaNumeric(10),
-                sub = faker.random.alphaNumeric(10),
+                folder = faker.string.alphanumeric(10),
+                sub = faker.string.alphanumeric(10),
                 fullPath = sandbox.fullPathFor(folder, sub);
             // Act
             await mkdir(fullPath);
