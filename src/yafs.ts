@@ -155,6 +155,29 @@ function mkdirWithFs(at: string): Promise<void> {
     });
 }
 
+export function mkdirSync(at: string): void {
+    const
+        parts = at.split(/[\\|\/]/);
+    if (os.platform() !== "win32" && parts.length > 1) {
+        if (parts[0] === "") {
+            // we were given an absolute path, starting at /
+            // -> need to remove the leading empty part &
+            //    prepend / onto the new leading part
+            parts.splice(0, 1);
+            parts[0] = `/${ parts[0] }`;
+        }
+    }
+    for (let i = 0; i < parts.length; i++) {
+        const current = path.join(...parts.slice(0, i + 1));
+        if (folderExistsSync(current)) {
+            continue;
+        }
+
+        fs.mkdirSync(current);
+    }
+}
+
+
 /**
  * Tests if the given path is a folder
  * @param at
