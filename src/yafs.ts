@@ -481,6 +481,24 @@ export async function rm(at: string): Promise<void> {
     }
 }
 
+export function rmSync(at: string): void {
+    if (folderExistsSync(at)) {
+        rmdirSync(at);
+        return;
+    }
+    if (!fileExistsSync(at)) {
+        return;
+    }
+    fs.rmSync(at, { maxRetries: 50 });
+}
+
+export function rmdirSync(at: string): void {
+    if (!folderExistsSync(at)) {
+        return;
+    }
+    fs.rmSync(at, { maxRetries: 50, recursive: true });
+}
+
 async function deltree(at: string): Promise<void> {
     const contents = await ls(at, { recurse: true });
     contents.sort().reverse();
