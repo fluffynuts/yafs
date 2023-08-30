@@ -482,6 +482,9 @@ export async function rm(at: string): Promise<void> {
 }
 
 export function rmSync(at: string): void {
+    if (!fs.rmSync) {
+        throw new Error(`fs.rmSync is not supported in this version of node - at least v14 is required`);
+    }
     if (folderExistsSync(at)) {
         rmdirSync(at);
         return;
