@@ -1,5 +1,5 @@
-import * as fs from "fs";
-import {WriteFileOptions, Stats} from "fs";
+import * as fs from "./fs";
+import {WriteFileOptions, Stats} from "./fs";
 import * as path from "path";
 import * as os from "os";
 
@@ -116,6 +116,7 @@ export function writeFileSync(
         fs.writeFileSync(at, contents);
     }
 }
+
 export function writeTextFileSync(
     at: string,
     contents: string | string[],
@@ -748,6 +749,27 @@ export function findHomeFolder(): string {
 export function resolveHomePath(relative: string): string {
     const home = findHomeFolder();
     return path.join(home, relative);
+}
+
+export async function chmod(
+    at: string,
+    mode: string | number
+): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        fs.chmod(at, mode, (err) => {
+            if (err) {
+                return reject(err);
+            }
+            resolve();
+        });
+    });
+}
+
+export function chmodSync(
+    at: string,
+    mode: string | number
+): void {
+    fs.chmodSync(at, mode);
 }
 
 export enum CopyFileOptions {
