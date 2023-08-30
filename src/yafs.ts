@@ -1,9 +1,9 @@
 import * as fs from "fs";
-import { WriteFileOptions, Stats } from "fs";
+import {WriteFileOptions, Stats} from "fs";
 import * as path from "path";
 import * as os from "os";
 
-const textOptions = { encoding: "utf8" as BufferEncoding };
+const textOptions = {encoding: "utf8" as BufferEncoding};
 
 interface ReadFileOptions {
     encoding: string | null | undefined | BufferEncoding;
@@ -136,7 +136,7 @@ export async function mkdir(at: string): Promise<void> {
             // -> need to remove the leading empty part &
             //    prepend / onto the new leading part
             parts.splice(0, 1);
-            parts[0] = `/${ parts[0] }`;
+            parts[0] = `/${parts[0]}`;
         }
     }
     for (let i = 0; i < parts.length; i++) {
@@ -164,7 +164,7 @@ export function mkdirSync(at: string): void {
             // -> need to remove the leading empty part &
             //    prepend / onto the new leading part
             parts.splice(0, 1);
-            parts[0] = `/${ parts[0] }`;
+            parts[0] = `/${parts[0]}`;
         }
     }
     for (let i = 0; i < parts.length; i++) {
@@ -334,7 +334,7 @@ function resolveMatches(opts: LsOptions): RegExp[] {
     }
     return Array.isArray(opts.match)
         ? opts.match
-        : [ opts.match ]
+        : [opts.match]
 }
 
 function makeSafeArray<T>(items: T[] | T | undefined): T[] {
@@ -343,7 +343,7 @@ function makeSafeArray<T>(items: T[] | T | undefined): T[] {
     }
     return Array.isArray(items)
         ? items
-        : [ items ];
+        : [items];
 }
 
 const defaultLsOptions = {
@@ -351,11 +351,54 @@ const defaultLsOptions = {
     throwOnMissingTarget: false
 } as LsOptions;
 
+export function lsSync(
+    at: string,
+    opts?: LsOptions
+): string[] {
+    const options = {...defaultLsOptions, ...opts};
+    const ignoreMissing = !options.throwOnMissingTarget;
+    if (ignoreMissing) {
+        const atExists = existsSync(at);
+        if (!atExists) {
+            return [];
+        }
+    }
+
+    const {entities} = options;
+    at = path.resolve(at);
+    const matches = resolveMatches(options);
+    options.doNotTraverse = makeSafeArray(options.doNotTraverse);
+
+    const tester = (fullPath: string) => {
+        let accepted = true;
+        if (entities !== FsEntities.all) {
+            const isMatch = entities === FsEntities.files
+                ? fileExistsSync : folderExistsSync;
+            accepted = accepted && isMatch(fullPath)
+        }
+        const relativePath = path.relative(at, fullPath);
+        let matched = !matches.length;
+        for (const m of matches) {
+            matched = matched || !!relativePath.match(m);
+        }
+        return accepted && matched;
+    };
+
+    const result = lsInternalSync(
+        at,
+        tester,
+        options
+    );
+    return opts?.fullPaths
+        ? result
+        : result.map(r => path.relative(at, r));
+}
+
 export async function ls(
     at: string,
     opts?: LsOptions
 ): Promise<string[]> {
-    const options = { ...defaultLsOptions, ...opts };
+    const options = {...defaultLsOptions, ...opts};
     const ignoreMissing = !options.throwOnMissingTarget;
     if (ignoreMissing) {
         const atExists = await exists(at);
@@ -365,7 +408,7 @@ export async function ls(
         }
     }
 
-    const { entities } = options;
+    const {entities} = options;
 
     at = path.resolve(at);
 
@@ -398,6 +441,80 @@ export async function ls(
 }
 
 type PathTester = (at: string) => Promise<boolean>;
+type SynchronousPathTester = (at: string) => boolean;
+
+function lsInternalSync(
+    at: string,
+    tester: SynchronousPathTester,
+    opts: LsOptions,
+    currentDepth?: number
+) {
+    if (currentDepth === undefined) {
+        currentDepth = 0;
+    }
+    currentDepth++;
+    const {
+        maxDepth,
+        onError,
+        recurse
+    } = opts;
+    if (maxDepth !== undefined && currentDepth > maxDepth) {
+        return [];
+    }
+
+    try {
+        const data = fs.readdirSync(at);
+        const result: string[] = [];
+        for (const p of data) {
+            const fullPath = prependAt(p);
+            if (tester(fullPath)) {
+                result.push(fullPath);
+            }
+            if (!recurse) {
+                continue;
+            }
+            // caller sanitises
+            const noTraverse = opts.doNotTraverse as RegExp[];
+            let skip = false;
+            for (const re of noTraverse) {
+                if (fullPath.match(re)) {
+                    skip = true;
+                    break;
+                }
+            }
+            if (skip) {
+                continue;
+            }
+            // even if tester fails, recurs on demand because test may
+            // specifically knock out only stuff in the middle
+            if (folderExistsSync(fullPath)) {
+                const subs = lsInternalSync(
+                    fullPath,
+                    tester,
+                    opts,
+                    currentDepth
+                );
+                result.push.apply(result, subs);
+            }
+        }
+        return result;
+    } catch (e) {
+        if (!onError) {
+            throw e;
+        }
+        try {
+            onError(e as Error);
+            return [];
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    function prependAt(s: string): string {
+        return path.join(at, s);
+    }
+
+}
 
 function lsInternal(
     at: string,
@@ -409,7 +526,11 @@ function lsInternal(
         currentDepth = 0;
     }
     currentDepth++;
-    const { maxDepth, onError, recurse } = opts;
+    const {
+        maxDepth,
+        onError,
+        recurse
+    } = opts;
     if (maxDepth !== undefined && currentDepth > maxDepth) {
         return Promise.resolve([]);
     }
@@ -466,6 +587,8 @@ function lsInternal(
     function prependAt(s: string): string {
         return path.join(at, s);
     }
+
+
 }
 
 const
@@ -492,18 +615,24 @@ export function rmSync(at: string): void {
     if (!fileExistsSync(at)) {
         return;
     }
-    fs.rmSync(at, { maxRetries: 50 });
+    fs.rmSync(at, {maxRetries: 50});
 }
 
 export function rmdirSync(at: string): void {
     if (!folderExistsSync(at)) {
         return;
     }
-    fs.rmSync(at, { maxRetries: 50, recursive: true });
+    fs.rmSync(
+        at,
+        {
+            maxRetries: 50,
+            recursive: true
+        }
+    );
 }
 
 async function deltree(at: string): Promise<void> {
-    const contents = await ls(at, { recurse: true });
+    const contents = await ls(at, {recurse: true});
     contents.sort().reverse();
     for (const p of contents) {
         const fullPath = path.join(at, p);
@@ -528,10 +657,11 @@ export async function rename(
         if (force) {
             await rm(to);
         } else {
-            throw new Error(`target '${ to }' already exists: specify force: true to overwrite`);
+            throw new Error(`target '${to}' already exists: specify force: true to overwrite`);
         }
     }
-    return retry(() =>
+    return retry(
+        () =>
             new Promise((resolve, reject) => {
                 fs.rename(at, to, err => {
                     if (isENOENT(err)) {
@@ -557,7 +687,7 @@ export async function copyFile(
 ): Promise<void> {
     options = options ?? CopyFileOptions.errorOnExisting;
     if (!(await fileExists(src))) {
-        throw new Error(`file not found at '${ src }'`);
+        throw new Error(`file not found at '${src}'`);
     }
     if (await folderExists(target)) {
         const baseName = path.basename(src);
@@ -565,7 +695,7 @@ export async function copyFile(
     }
     if (options !== CopyFileOptions.overwriteExisting &&
         await fileExists(target)) {
-        throw new Error(`target already exists at '${ target }'`);
+        throw new Error(`target already exists at '${target}'`);
     }
     return new Promise((resolve, reject) => {
         fs.copyFile(src, target, err => {
@@ -583,7 +713,7 @@ export function findHomeFolder(): string {
             : "HOME",
         result = process.env[environmentVariable];
     if (!result) {
-        throw new Error(`Unable to determine user home folder (searched environment variable: ${ environmentVariable }`);
+        throw new Error(`Unable to determine user home folder (searched environment variable: ${environmentVariable}`);
     }
     return result;
 }
@@ -598,7 +728,8 @@ export enum CopyFileOptions {
     overwriteExisting
 }
 
-class AbortRetriesError extends Error {
+class AbortRetriesError
+    extends Error {
     error: Error;
 
     constructor(
