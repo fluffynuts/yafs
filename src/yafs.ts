@@ -6,7 +6,7 @@ import * as os from "os";
 const textOptions = {encoding: "utf8" as BufferEncoding};
 
 interface ReadFileOptions {
-    encoding: string | null | undefined | BufferEncoding;
+    encoding: string | null | BufferEncoding;
     flags?: string;
 }
 
@@ -57,7 +57,11 @@ export async function readTextFileLines(at: string): Promise<string[]> {
  * @param at
  */
 export function readTextFileSync(at: string): string {
-    return fs.readFileSync(at, textOptions);
+    return readFileSync(at, textOptions).toString();
+}
+
+export function readFileSync(at: string, opts?: ReadFileOptions | null): Buffer {
+    return fs.readFileSync(at, opts as any /* looks like something is up with typings, gonna force it */);
 }
 
 export function readTextFileLinesSync(at: string): string[] {
@@ -88,16 +92,39 @@ export async function writeFile(
     return new Promise((resolve, reject) => {
         // all of options is supposed to be optional, but the typings demand
         // a concrete options -- future proof by taking different routes
-        if (!options) {
-            fs.writeFile(at, contents, err => {
+        if (options) {
+            fs.writeFile(at, contents, options, err => {
                 return err ? reject(err) : resolve();
             });
         } else {
-            fs.writeFile(at, contents, options, err => {
+            fs.writeFile(at, contents, err => {
                 return err ? reject(err) : resolve();
             });
         }
     });
+}
+
+export function writeFileSync(
+    at: string,
+    contents: Buffer,
+    options?: WriteFileOptions
+) {
+    mkdirSync(path.dirname(at));
+    if (options) {
+        fs.writeFileSync(at, contents, options);
+    } else {
+        fs.writeFileSync(at, contents);
+    }
+}
+export function writeTextFileSync(
+    at: string,
+    contents: string | string[],
+    options?: TextWriteFileOptions
+): void {
+    if (Array.isArray(contents)) {
+        contents = contents.join(options?.eol || "\n");
+    }
+    writeFileSync(at, Buffer.from(contents), options);
 }
 
 export type TextWriteFileOptions = WriteFileOptions & {
