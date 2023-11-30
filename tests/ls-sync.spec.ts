@@ -1,10 +1,10 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
 import { faker } from "@faker-js/faker";
-import { FsEntities, ls } from "../src";
-import * as path from "path";
+import { FsEntities, ls, lsSync } from "../src";
+import path from "path";
 
-describe(`ls`, () => {
+describe(`lsSync`, () => {
   it(`should return all files and folders in the given folder by default`, async () => {
     // Arrange
     const
@@ -14,7 +14,7 @@ describe(`ls`, () => {
     await sandbox.mkdir(folder);
     await sandbox.writeFile(file, faker.word.sample(10));
     // Act
-    const result = await ls(sandbox.path);
+    const result = lsSync(sandbox.path);
     // Assert
     expect(result)
       .toBeEquivalentTo([
@@ -32,7 +32,7 @@ describe(`ls`, () => {
     await sandbox.mkdir(folder);
     await sandbox.writeFile(file, faker.word.sample(10));
     // Act
-    const result = await sandbox.run(async () => await ls("."));
+    const result = await sandbox.run(() => lsSync("."));
     // Assert
     expect(result)
       .toBeEquivalentTo([
@@ -50,7 +50,7 @@ describe(`ls`, () => {
     await sandbox.mkdir(folder);
     await sandbox.writeFile(file, faker.word.sample(10));
     // Act
-    const result = await ls(sandbox.path, { fullPaths: true });
+    const result = lsSync(sandbox.path, { fullPaths: true });
     // Assert
     expect(result)
       .toBeEquivalentTo([
@@ -69,7 +69,7 @@ describe(`ls`, () => {
     await sandbox.writeFile(file, faker.word.sample(10));
     // Act
     const result = await sandbox.run(
-      () => ls(
+      () => lsSync(
         ".",
         {
           fullPaths: true,
@@ -95,7 +95,7 @@ describe(`ls`, () => {
     await sandbox.mkdir(folder);
     await sandbox.writeFile(relPath, faker.word.sample());
     // Act
-    const result = await ls(sandbox.path, { recurse: true });
+    const result = lsSync(sandbox.path, { recurse: true });
     // Assert
     expect(result)
       .toBeEquivalentTo([
@@ -114,7 +114,7 @@ describe(`ls`, () => {
     await sandbox.mkdir(folder);
     await sandbox.writeFile(relPath, faker.word.sample());
     // Act
-    const result = await ls(
+    const result = lsSync(
       sandbox.path,
       {
         recurse: true,
@@ -142,7 +142,7 @@ describe(`ls`, () => {
     await sandbox.writeFile(rel2, faker.word.sample());
     await sandbox.writeFile(otherFile, faker.word.sample());
     // Act
-    const result = await ls(sandbox.path, {
+    const result = lsSync(sandbox.path, {
       recurse: true,
       match: /file2\.js$/
     });
@@ -168,7 +168,7 @@ describe(`ls`, () => {
     await sandbox.writeFile(rel2, faker.word.sample());
     await sandbox.writeFile(otherFile, faker.word.sample());
     // Act
-    const result = await ls(sandbox.path, {
+    const result = lsSync(sandbox.path, {
       recurse: true,
       fullPaths: true,
       match: /file2\.js$/
@@ -190,7 +190,7 @@ describe(`ls`, () => {
     await sandbox.writeFile("src/app/index.js", "// TODO");
     await sandbox.writeFile("__tests__/index.spec.js", "// TODO");
     // Act
-    const result = await ls(sandbox.path, {
+    const result = lsSync(sandbox.path, {
       recurse: true,
       entities: FsEntities.files,
       fullPaths: false,
@@ -215,7 +215,7 @@ describe(`ls`, () => {
     await sandbox.writeFile("include1/file1", faker.word.sample())
     // Act
     const result = await sandbox.run(async () => {
-      return await ls(
+      return lsSync(
         ".",
         {
           match: [ /include/, /exclude/ ],
@@ -235,7 +235,7 @@ describe(`ls`, () => {
       folder = faker.string.alphanumeric(10),
       fullPath = sandbox.fullPathFor(folder);
     // Act
-    const result = await ls(fullPath);
+    const result = lsSync(fullPath);
     // Assert
     expect(result)
       .toEqual([]);
@@ -248,7 +248,7 @@ describe(`ls`, () => {
     await sandbox.mkdir("foo.bar.quux.1.2.3");
     // Act
     const result = await sandbox.run(async () => {
-      return await ls(".", { match: /^foo\.bar\.quux\.\d+\.\d+\.\d+$/ });
+      return lsSync(".", { match: /^foo\.bar\.quux\.\d+\.\d+\.\d+$/ });
     });
     // Assert
     expect(result)
@@ -262,7 +262,7 @@ describe(`ls`, () => {
     await sandbox.mkdir("foo/bar/quux");
     // Act
     const result = await sandbox.run(async () => {
-      return await ls(
+      return lsSync(
         ".",
         {
           recurse: true,
@@ -286,7 +286,7 @@ describe(`ls`, () => {
     await sandbox.mkdir("foo/node_modules/some-module/js");
     // Act
     const result = await sandbox.run(async () => {
-      return await ls(
+      return lsSync(
         ".",
         {
           recurse: true,
@@ -305,6 +305,44 @@ describe(`ls`, () => {
       .not.toContain(path.join("foo", "node_modules", "some-module", "js"));
   });
 
+  it(`should include the positive matches and exclude the negative ones`, async () => {
+    // Arrange
+    const
+      sandbox = await Sandbox.create();
+    await sandbox.writeFile("foo.1.1.1.nupkg", "");
+    await sandbox.writeFile("foo.1.1.1.symbols.nupkg", "");
+    // Act
+    const result = lsSync(sandbox.path, {
+      entities: FsEntities.files,
+      match: /\.nupkg$/,
+      exclude: /\.symbols\.nupkg$/,
+      fullPaths: false
+    });
+
+    // Assert
+    expect(result)
+      .toEqual([ "foo.1.1.1.nupkg" ]);
+  });
+
+  it(`should include the positive matches and exclude the negative ones`, async () => {
+    // Arrange
+    const
+      sandbox = await Sandbox.create();
+    await sandbox.writeFile("foo.1.1.1.nupkg", "");
+    await sandbox.writeFile("foo.1.1.1.symbols.nupkg", "");
+    // Act
+    const result = lsSync(sandbox.path, {
+      entities: FsEntities.files,
+      match: /\.nupkg$/,
+      exclude: /\.symbols\.nupkg$/,
+      fullPaths: false
+    });
+
+    // Assert
+    expect(result)
+      .toEqual([ "foo.1.1.1.nupkg" ]);
+  });
+
   describe(`quick return via stopOnFirstMatch: true`, () => {
     describe(`listing files in a folder, no recursion`, () => {
       describe(`when no filters`, () => {
@@ -316,7 +354,7 @@ describe(`ls`, () => {
             b = await sandbox.writeFile("b.js", "console.log('b');"),
             c = await sandbox.writeFile("c.js", "console.log('c');");
           // Act
-          const result = await ls(sandbox.path, {
+          const result = lsSync(sandbox.path, {
             stopOnFirstMatch: true
           });
           // Assert
@@ -333,7 +371,7 @@ describe(`ls`, () => {
             b = await sandbox.writeFile("b.js", "console.log('b');"),
             c = await sandbox.writeFile("c.js", "console.log('c');");
           // Act
-          const result = await ls(sandbox.path, {
+          const result = lsSync(sandbox.path, {
             stopOnFirstMatch: true,
             match: /b/
           });
@@ -354,7 +392,7 @@ describe(`ls`, () => {
               a = await sandbox.writeFile("first/second/a.js", "console.log('a');"),
               expected = path.join("first", "z.js");
             // Act
-            const result = await ls(sandbox.path, {
+            const result = lsSync(sandbox.path, {
               entities: FsEntities.files,
               recurse: true,
               stopOnFirstMatch: true
@@ -373,7 +411,7 @@ describe(`ls`, () => {
               a = await sandbox.writeFile("first/second/a.js", "console.log('a');"),
               s = await sandbox.mkdir("second");
             // Act
-            const result = await ls(sandbox.path, {
+            const result = lsSync(sandbox.path, {
               entities: FsEntities.folders,
               recurse: true,
               stopOnFirstMatch: true
@@ -394,7 +432,7 @@ describe(`ls`, () => {
               a = await sandbox.writeFile("first/second/a.js", "console.log('a');"),
               expected = path.join("first", "second", "a.js");
             // Act
-            const result = await ls(sandbox.path, {
+            const result = lsSync(sandbox.path, {
               entities: FsEntities.files,
               recurse: true,
               stopOnFirstMatch: true,
@@ -416,7 +454,7 @@ describe(`ls`, () => {
               otherOther = await sandbox.mkdir("first/other/wat/other"),
               s = await sandbox.mkdir("second");
             // Act
-            const result = await ls(sandbox.path, {
+            const result = lsSync(sandbox.path, {
               entities: FsEntities.folders,
               recurse: true,
               stopOnFirstMatch: true,
@@ -437,7 +475,7 @@ describe(`ls`, () => {
               s = await sandbox.mkdir("second"),
               expected = path.join("first/other");
             // Act
-            const result = await ls(sandbox.path, {
+            const result = lsSync(sandbox.path, {
               entities: FsEntities.folders,
               recurse: true,
               stopOnFirstMatch: true,
@@ -456,4 +494,3 @@ describe(`ls`, () => {
     await Sandbox.destroyAll();
   });
 });
-

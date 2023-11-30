@@ -360,6 +360,14 @@ export interface LsOptions {
    * this into the filesystem
    */
   maxDepth?: number;
+
+  /**
+   * optional: to speed up recursive searches for single files,
+   * bail out of recursion the moment a single match is found
+   * for your filters (or the first item that's found, when no
+   * filters are provided)
+   */
+  stopOnFirstMatch?: boolean;
 }
 
 function resolveMatches(opts: LsOptions): RegExp[] {
@@ -500,7 +508,7 @@ function lsInternalSync(
   tester: SynchronousPathTester,
   opts: LsOptions,
   currentDepth?: number
-) {
+): string[] {
   if (currentDepth === undefined) {
     currentDepth = 0;
   }
@@ -508,7 +516,8 @@ function lsInternalSync(
   const {
     maxDepth,
     onError,
-    recurse
+    recurse,
+    stopOnFirstMatch
   } = opts;
   if (maxDepth !== undefined && currentDepth > maxDepth) {
     return [];
@@ -517,10 +526,15 @@ function lsInternalSync(
   try {
     const data = fs.readdirSync(at);
     const result: string[] = [];
+    data.sort();
+    const subFolders: string[] = [];
     for (const p of data) {
       const fullPath = prependAt(p);
       if (tester(fullPath)) {
         result.push(fullPath);
+        if (stopOnFirstMatch) {
+          return result;
+        }
       }
       if (!recurse) {
         continue;
@@ -540,15 +554,19 @@ function lsInternalSync(
       // even if tester fails, recurs on demand because test may
       // specifically knock out only stuff in the middle
       if (folderExistsSync(fullPath)) {
-        const subs = lsInternalSync(
-          fullPath,
-          tester,
-          opts,
-          currentDepth
-        );
-        result.push.apply(result, subs);
+        subFolders.push(fullPath);
       }
     }
+    for (const sub of subFolders) {
+      const subs = lsInternalSync(
+        sub,
+        tester,
+        opts,
+        currentDepth
+      );
+      result.push.apply(result, subs);
+    }
+    result.sort();
     return result;
   } catch (e) {
     if (!onError) {
@@ -581,7 +599,8 @@ function lsInternal(
   const {
     maxDepth,
     onError,
-    recurse
+    recurse,
+    stopOnFirstMatch
   } = opts;
   if (maxDepth !== undefined && currentDepth > maxDepth) {
     return Promise.resolve([]);
@@ -600,10 +619,15 @@ function lsInternal(
         }
       }
       const result: string[] = [];
+      data.sort();
+      const subFolders: string[] = [];
       for (const p of data) {
         const fullPath = prependAt(p);
         if (await tester(fullPath)) {
           result.push(fullPath);
+          if (stopOnFirstMatch) {
+            return resolve(result);
+          }
         }
         if (!recurse) {
           continue;
@@ -623,15 +647,19 @@ function lsInternal(
         // even if tester fails, recurs on demand because test may
         // specifically knock out only stuff in the middle
         if (await folderExists(fullPath)) {
-          const subs = await lsInternal(
-            fullPath,
-            tester,
-            opts,
-            currentDepth
-          );
-          result.push.apply(result, subs);
+          subFolders.push(fullPath);
         }
       }
+      for (const sub of subFolders) {
+        const subs = await lsInternal(
+          sub,
+          tester,
+          opts,
+          currentDepth
+        );
+        result.push.apply(result, subs);
+      }
+      result.sort();
       resolve(result);
     });
   });
