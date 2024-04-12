@@ -144,7 +144,8 @@ describe(`ls`, () => {
     // Act
     const result = await ls(sandbox.path, {
       recurse: true,
-      match: /file2\.js$/
+      match: /file2\.js$/,
+      entities: FsEntities.files
     });
     // Assert
     expect(result)

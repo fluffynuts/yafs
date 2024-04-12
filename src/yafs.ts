@@ -85,7 +85,7 @@ function splitIntoLines(str: string) {
  */
 export async function writeFile(
   at: string,
-  contents: Buffer,
+  contents: Buffer | string,
   options?: WriteFileOptions
 ): Promise<void> {
   await mkdir(path.dirname(at));

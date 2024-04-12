@@ -33,6 +33,24 @@ describe(`writing files`, () => {
                 expect(result.toString())
                     .toEqual(buffer.toString());
             });
+
+            it(`should support string contents`, async () => {
+                // Arrange
+                const
+                  sandbox = await Sandbox.create(),
+                  dir = faker.string.alphanumeric(10),
+                  filename = faker.string.alphanumeric(10),
+                  fullPath = sandbox.fullPathFor(dir, filename),
+                  data = faker.word.sample(10);
+                // Act
+                await writeFile(fullPath, data);
+                const result = await readFile(fullPath);
+                // Assert
+                expect(result)
+                  .toBeInstanceOf(Buffer);
+                expect(result.toString())
+                  .toEqual(data);
+            });
         });
 
         describe(`writeTextFile`, () => {
