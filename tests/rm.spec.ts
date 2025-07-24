@@ -3,6 +3,7 @@ import { Sandbox } from "filesystem-sandbox";
 import { faker } from "@faker-js/faker";
 import { rm, rmdir, rmSync, rmdirSync } from "../src/yafs";
 import * as path from "path";
+import { randomSentence } from "./random";
 
 describe(`rm`, () => {
     const { spyOn } = jest;
@@ -193,33 +194,6 @@ describe(`rm`, () => {
                 .toBeFile();
         });
     });
-
-    function randomSentence(): string[] {
-        const howManyWords = faker.number.int({ min: 2, max: 10 });
-        const result = [] as string[];
-        for (let i = 0; i < howManyWords; i++) {
-            result.push(randomWord());
-        }
-        return result;
-    }
-
-    interface Dictionary<T> {
-        [key: string]: T;
-    }
-
-    const wordFunctions = Object.keys(faker.word).filter(n => typeof (faker.word as Dictionary<any>)[n] === "function");
-
-    function randomWord() {
-        const
-            fn = randomElement(wordFunctions),
-            word = faker.word as unknown as Dictionary<(() => string)>;
-        return word[fn]();
-    }
-
-    function randomElement<T>(arr: T[]): T {
-        const idx = faker.number.int({ min: 0, max: arr.length - 1 });
-        return arr[idx];
-    }
 
     describe(`rmSync`, () => {
         it(`should not error if the given path doesn't exist`, async () => {

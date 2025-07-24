@@ -772,6 +772,42 @@ export async function rename(
     );
 }
 
+export interface CpOptions {
+    onExisting?: CopyFileOptions,
+    recurse?: boolean
+}
+
+export async function cp(
+    src: string,
+    dst: string,
+    opts?: CpOptions
+) {
+    return new Promise<void>(async (resolve, reject) => {
+        const recursive = opts?.recurse ?? false;
+        if (await folderExists(src) && !recursive) {
+            try {
+                await mkdir(path.join(dst, path.basename(src)));
+                return resolve();
+            } catch (e) {
+                return reject(e);
+            }
+        }
+        // squirrel-brained js devs can't respect a single flag
+        // ( https://github.com/nodejs/node/issues/58947 )
+        const errorOnExist = opts?.onExisting === undefined || opts?.onExisting === CopyFileOptions.errorOnExisting;
+        const force = !errorOnExist;
+        fs.cp(
+            src,
+            dst,
+            { recursive, errorOnExist, force },
+            err => {
+                return err
+                    ? reject(err)
+                    : resolve();
+            });
+    });
+}
+
 export async function copyFile(
     src: string,
     target: string,
