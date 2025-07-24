@@ -5,6 +5,7 @@ import { rm, rmdir, rmSync, rmdirSync } from "../src/yafs";
 import * as path from "path";
 
 describe(`rm`, () => {
+    const { spyOn } = jest;
     it(`should not error if the given path doesn't exist`, async () => {
         // Arrange
         const
@@ -97,17 +98,78 @@ describe(`rm`, () => {
             .not.toBeFolder();
     });
 
-    it(`rmdir should not error on ENOENT`, async () => {
-        // Arrange
-        const
-            sandbox = await Sandbox.create(),
-            folderName = faker.string.alphanumeric(10),
-            folderPath = sandbox.fullPathFor(folderName);
-        // Act
-        await expect(rmdir(folderPath))
-            .resolves.not.toThrow();
-        // Assert
+    describe(`rmdir`, () => {
+        it(`rmdir should not error on ENOENT`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                folderPath = sandbox.fullPathFor(folderName);
+            // Act
+            await expect(rmdir(folderPath))
+                .resolves.not.toThrow();
+            // Assert
+        });
+
+        it(`should recurse on demand`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                fileName = faker.string.alphanumeric(10),
+                fullFolderPath = await sandbox.mkdir(folderName),
+                fullFilePath = await sandbox.writeFile(`${folderName}/${fileName}`, randomSentence());
+            // Act
+            await rmdir(fullFolderPath, { recurse: true });
+            // Assert
+            expect(fullFilePath)
+                .not.toBeFile();
+        });
+
+        it(`should not recurse by default`, async () => {
+            // Arrange
+            spyOn(console, "error").mockReturnThis();
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                fileName = faker.string.alphanumeric(10),
+                fullFolderPath = await sandbox.mkdir(folderName),
+                fullFilePath = await sandbox.writeFile(`${folderName}/${fileName}`, randomSentence());
+            // Act
+            await expect(rmdir(fullFolderPath, { retries: 0 }))
+                .toBeRejected();
+            // Assert
+            expect(fullFilePath)
+                .toBeFile();
+        });
     });
+
+    function randomSentence(): string[] {
+        const howManyWords = faker.number.int({ min: 2, max: 10 });
+        const result = [] as string[];
+        for (let i = 0; i < howManyWords; i++) {
+            result.push(randomWord());
+        }
+        return result;
+    }
+
+    interface Dictionary<T> {
+        [key: string]: T;
+    }
+
+    const wordFunctions = Object.keys(faker.word).filter(n => typeof (faker.word as Dictionary<any>)[n] === "function");
+
+    function randomWord() {
+        const
+            fn = randomElement(wordFunctions),
+            word = faker.word as unknown as Dictionary<(() => string)>;
+        return word[fn]();
+    }
+
+    function randomElement<T>(arr: T[]): T {
+        const idx = faker.number.int({ min: 0, max: arr.length - 1 });
+        return arr[idx];
+    }
 
     describe(`rmSync`, () => {
         it(`should not error if the given path doesn't exist`, async () => {

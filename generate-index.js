@@ -29,7 +29,8 @@ function writeFile(at, contents) {
     const
         tsFiles = (await readdir("src"))
             .filter(f => f.match(/\.ts$/))
-            .filter(f => path.basename(f) !== "fs.ts"),
+            .filter(f => path.basename(f) !== "fs.ts")
+            .filter(f => path.basename(f) !== "index.ts"),
         target = path.resolve(path.join("src", "index.ts")),
         output = tsFiles.sort()
             .map(f => `export * from "./${f.replace(/\.ts$/, "")}";`)

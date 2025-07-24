@@ -844,11 +844,13 @@ class AbortRetriesError
 
 type AsyncAction = () => Promise<void>;
 
-async function retry(
+export async function retry(
   action: AsyncAction,
   attempts: number,
-  backoffMs: number) {
-  for (let i = 0; i < attempts; i++) {
+  backoffMs: number
+) {
+  const limit = attempts + 1; // allow 0 for retries to mean "do it once, don't retry"
+  for (let i = 0; i < limit; i++) {
     try {
       await action();
       return;
@@ -857,7 +859,7 @@ async function retry(
         throw e.error;
       }
       console.error(e);
-      if (i === attempts - 1) {
+      if (i === limit - 1) {
         throw e;
       }
       await sleep(backoffMs);
@@ -882,21 +884,47 @@ function unlink(at: string): Promise<void> {
   });
 }
 
-export function rmdir(at: string): Promise<void> {
-  return retry(() => rmdirInternal(at), rmRetries, rmRetryBackoff);
+export interface RmOptions {
+  recurse?: boolean;
+  retries?: number
+}
+
+export async function rmdir(at: string, options?: RmOptions): Promise<void> {
+  const opts = options ?? {} as RmOptions;
+  const retries = opts.retries ?? rmRetries;
+  await retry(() => rmdirInternal(at, opts), retries, rmRetryBackoff);
 }
 
 function isENOENT(err: NodeJS.ErrnoException | null): err is NodeJS.ErrnoException {
   return !!err && err.code === "ENOENT";
 }
 
-function rmdirInternal(at: string): Promise<void> {
+function rmdirInternal(at: string, opts: RmOptions): Promise<void> {
   return new Promise((resolve, reject) => {
-    fs.rmdir(at, err => {
-      if (isENOENT(err)) {
-        resolve();
-      }
-      return err ? reject(err) : resolve();
-    });
+    const recursive = opts?.recurse ?? false;
+    if (recursive) {
+      // another great choice by squirrel-brained js devs:
+      // - rmdir recursive is deprecated
+      // - deprecation notice says to use rm and set recursive (works on a folder)
+      // - but rm on a folder without recursive fails with EISDIR (is a folder)
+      //   - duh.
+      fs.rm(at, { recursive }, err => {
+        if (isENOENT(err)) {
+          resolve();
+        }
+        return err
+            ? reject(err)
+            : resolve();
+      });
+    } else {
+      fs.rmdir(at, err => {
+        if (isENOENT(err)) {
+          resolve();
+        }
+        return err
+            ? reject(err)
+            : resolve();
+      });
+    }
   });
 }

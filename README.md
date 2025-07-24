@@ -40,6 +40,7 @@ I keep having to write around the `fs` module:
 - writeTextFile
   - ensures target folders exist before writing
   - simpler interface for text file writing
+
   
 ## Examples
 ```javascript
