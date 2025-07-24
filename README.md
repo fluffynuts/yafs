@@ -12,6 +12,8 @@ I keep having to write around the `fs` module:
 
 - copyFile
   - copy a file, with an option to overwite if existing
+- cp
+  - copy a file or a folder (with optional recursion)
 - exists
   - tests if the path exists (file or folder or other)
 - folderExists
@@ -23,9 +25,9 @@ I keep having to write around the `fs` module:
 - mkdir
   - create a folder (won't error if it already exists)
 - rm
-  - deletes a file or folder (recursive)
+  - deletes a file or folder (recursively)
 - rmdir
-  - deletes a folder only (will error if the folder isn't empty)
+  - deletes a folder only (optionally recursively, otherwise it will error if the folder is not empty)
 - readFile
 - readTextFile
   - because I keep having to specify the options and I often want text files, not buffers
@@ -41,8 +43,9 @@ I keep having to write around the `fs` module:
   - ensures target folders exist before writing
   - simpler interface for text file writing
 
+There are synchronous variants for most operations too.
   
-## Examples
+#e Examples
 ```javascript
 const {
   ls,
