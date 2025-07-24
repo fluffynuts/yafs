@@ -782,20 +782,18 @@ export async function cp(
     dst: string,
     opts?: CpOptions
 ) {
-    return new Promise<void>(async (resolve, reject) => {
-        const recursive = opts?.recurse ?? false;
-        if (await folderExists(src) && !recursive) {
-            try {
-                await mkdir(path.join(dst, path.basename(src)));
-                return resolve();
-            } catch (e) {
-                return reject(e);
-            }
-        }
-        // squirrel-brained js devs can't respect a single flag
-        // ( https://github.com/nodejs/node/issues/58947 )
-        const errorOnExist = opts?.onExisting === undefined || opts?.onExisting === CopyFileOptions.errorOnExisting;
-        const force = !errorOnExist;
+    if (!fs.cp) {
+        // older versions of node, eg 14, don't have fs.cp
+        return await cpManually(src, dst, opts);
+    }
+
+    const recursive = opts?.recurse ?? false;
+    // squirrel-brained js devs can't respect a single flag
+    // ( https://github.com/nodejs/node/issues/58947 )
+    const errorOnExist = opts?.onExisting === undefined || opts?.onExisting === CopyFileOptions.errorOnExisting;
+    const force = !errorOnExist;
+    // node 14 (at least) doesn't have fs.cp
+    return new Promise<void>((resolve, reject) => {
         fs.cp(
             src,
             dst,
@@ -807,6 +805,43 @@ export async function cp(
             });
     });
 }
+
+async function cpManually(
+    src: string,
+    dst: string,
+    opts?: CpOptions
+): Promise<void> {
+    if (await fileExists(src)) {
+        return await copyFile(src, dst, opts?.onExisting ?? CopyFileOptions.errorOnExisting);
+    }
+    const recurse = opts?.recurse ?? false;
+    if (await folderExists(src) && !recurse) {
+        return await mkdir(path.join(dst, path.basename(src)));
+    }
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            const baseFolder = path.basename(src);
+            await mkdir(path.join(dst, baseFolder));
+            const srcContents = await ls(src, {
+                fullPaths: false,
+                recurse
+            });
+            // the in-place sort which returns the array always catches me by surprise
+            const toCopy = srcContents.sort().reverse();
+            for (const srcItem of toCopy) {
+                await copyFile(
+                    path.join(src, srcItem),
+                    path.join(dst, srcItem),
+                    opts?.onExisting ?? CopyFileOptions.errorOnExisting
+                );
+            }
+            resolve();
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
+
 
 export async function copyFile(
     src: string,
