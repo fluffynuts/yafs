@@ -5,18 +5,39 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-
+# I've avoided matrix here because it looks
+# like the parallel jobs don't run in isolation
+# and then they interfere with each other
 jobs:
-  main:
+  test-node14:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ '14', '20', '22' ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '14'
+      - name: Build and test
+        run: |
+          npm ci
+          npm test
+  test-node20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build and test
+        run: |
+          npm ci
+          npm test
+  test-node22:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Build and test
         run: |
           npm ci
