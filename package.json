@@ -40,7 +40,7 @@
     "console-cls": "^1.2.2",
     "cross-env": "^7.0.2",
     "expect-even-more-jest": "^1.18.0",
-    "filesystem-sandbox": "^1.24.0",
+    "filesystem-sandbox": "^1.25.0",
     "nodemon": "^2.0.22",
     "npm-run-all": "^4.1.5",
     "ts-jest": "^26.1.3",
