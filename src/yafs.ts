@@ -782,9 +782,16 @@ export async function cp(
     dst: string,
     opts?: CpOptions
 ) {
+    if (await fileExists(src)) {
+        return await copyFile(src, dst, opts?.onExisting ?? CopyFileOptions.errorOnExisting);
+    }
+    const recurse = opts?.recurse ?? false;
+    if (await folderExists(src) && !recurse) {
+        return await mkdir(path.join(dst, path.basename(src)));
+    }
     if (!fs.cp) {
         // older versions of node, eg 14, don't have fs.cp
-        return await cpManually(src, dst, opts);
+        return await cpRecursiveManually(src, dst, opts);
     }
 
     const recursive = opts?.recurse ?? false;
@@ -806,25 +813,18 @@ export async function cp(
     });
 }
 
-async function cpManually(
+async function cpRecursiveManually(
     src: string,
     dst: string,
     opts?: CpOptions
 ): Promise<void> {
-    if (await fileExists(src)) {
-        return await copyFile(src, dst, opts?.onExisting ?? CopyFileOptions.errorOnExisting);
-    }
-    const recurse = opts?.recurse ?? false;
-    if (await folderExists(src) && !recurse) {
-        return await mkdir(path.join(dst, path.basename(src)));
-    }
     return new Promise<void>(async (resolve, reject) => {
         try {
             const baseFolder = path.basename(src);
             await mkdir(path.join(dst, baseFolder));
             const srcContents = await ls(src, {
                 fullPaths: false,
-                recurse
+                recurse: true
             });
             // the in-place sort which returns the array always catches me by surprise
             const toCopy = srcContents.sort().reverse();
