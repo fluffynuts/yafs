@@ -144,6 +144,56 @@ describe(`rm`, () => {
         });
     });
 
+    describe(`rmdirSync`, () => {
+        it(`rmdir should not error on ENOENT`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                folderPath = sandbox.fullPathFor(folderName);
+            expect(folderPath)
+                .not.toBeFolder();
+            // Act
+            expect(() => rmdirSync(folderPath))
+                .not.toThrow();
+            // Assert
+            expect(folderPath)
+                .not.toBeFolder();
+        });
+
+        it(`should recurse on demand`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                fileName = faker.string.alphanumeric(10),
+                fullFolderPath = await sandbox.mkdir(folderName),
+                fullFilePath = await sandbox.writeFile(`${folderName}/${fileName}`, randomSentence());
+            // Act
+            rmdirSync(fullFolderPath, { recurse: true });
+            // Assert
+            expect(fullFilePath)
+                .not.toBeFile();
+        });
+
+        it(`should not recurse by default`, async () => {
+            // Arrange
+            spyOn(console, "error").mockReturnThis();
+            const
+                sandbox = await Sandbox.create(),
+                folderName = faker.string.alphanumeric(10),
+                fileName = faker.string.alphanumeric(10),
+                fullFolderPath = await sandbox.mkdir(folderName),
+                fullFilePath = await sandbox.writeFile(`${folderName}/${fileName}`, randomSentence());
+            // Act
+            expect(() => rmdirSync(fullFolderPath, { retries: 0 }))
+                .toThrow();
+            // Assert
+            expect(fullFilePath)
+                .toBeFile();
+        });
+    });
+
     function randomSentence(): string[] {
         const howManyWords = faker.number.int({ min: 2, max: 10 });
         const result = [] as string[];
