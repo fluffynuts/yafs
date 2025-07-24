@@ -21,6 +21,7 @@ jobs:
           npm ci
           npm test
   test-node20:
+    needs: [test-node14]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -32,6 +33,7 @@ jobs:
           npm ci
           npm test
   test-node22:
+    needs: [test-node14, test-node20]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
