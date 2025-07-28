@@ -179,7 +179,13 @@ export async function mkdir(at: string): Promise<void> {
 
 function mkdirWithFs(at: string): Promise<void> {
     return new Promise((resolve, reject) => {
-        fs.mkdir(at, err => err ? reject(err) : resolve());
+        fs.mkdir(at, err => {
+            if (err && err.code === "EEXIST") {
+                // already exists, our work is technically done
+                return resolve();
+            }
+            return err ? reject(err) : resolve();
+        });
     });
 }
 
