@@ -179,7 +179,7 @@ describe(`writing files`, () => {
 
         });
     });
-    afterEach(async () => {
+    afterAll(async () => {
         await Sandbox.destroyAll();
     });
 

@@ -190,7 +190,7 @@ describe(`rename`, () => {
             .toBeFile();
     });
 
-    afterEach(async () => {
+    afterAll(async () => {
         await Sandbox.destroyAll();
     });
 });

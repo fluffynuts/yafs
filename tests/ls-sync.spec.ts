@@ -490,7 +490,7 @@ describe(`lsSync`, () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await Sandbox.destroyAll();
   });
 });

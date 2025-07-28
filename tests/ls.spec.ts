@@ -453,7 +453,7 @@ describe(`ls`, () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await Sandbox.destroyAll();
   });
 });
