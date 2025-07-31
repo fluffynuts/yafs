@@ -1,6 +1,6 @@
 import "expect-even-more-jest";
 import { Sandbox } from "filesystem-sandbox";
-import { readJson } from "../src";
+import { readJson, readJsonSync } from "../src";
 import { faker } from "@faker-js/faker";
 
 describe(`readJson`, () => {
@@ -56,6 +56,63 @@ this is definitely not json
                 // Assert
                 expect(result)
                     .toEqual(expected);
+            });
+        });
+    });
+    describe(`synchronous variant`, () => {
+        describe(`when no options provided (ie, default behavior)`, () => {
+            describe(`when file does not exist`, () => {
+                it(`should return undefined`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        fileName = sandbox.fullPathFor("cow.json");
+                    // Act
+                    const result = readJsonSync<Cow>(fileName);
+                    // Assert
+                    expect(result)
+                        .toBeUndefined();
+                });
+            });
+
+            describe(`when file is invalid json`, () => {
+                it(`should return null`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        fileName = await sandbox.writeFile(
+                            "cow.json",
+                            `
+this is definitely not json
+`
+                        )
+                    // Act
+                    const result = readJsonSync<Cow>(fileName);
+                    // Assert
+                    expect(result)
+                        .toBeNull();
+                });
+            });
+
+            describe(`when file is valid json`, () => {
+                it(`should return the parsed object`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        expected: Cow = {
+                            name: faker.person.firstName(),
+                            ageInMonths: faker.number.int({ min: 8, max: 32 })
+                        },
+                        fileName = await sandbox.writeFile(
+                            "cow.json",
+                            JSON.stringify(expected, null, 2)
+                        )
+                    // Act
+                    const result = readJsonSync<Cow>(fileName);
+                    // Assert
+                    expect(result)
+                        .toEqual(expected);
+                });
             });
         });
     });

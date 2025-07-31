@@ -31,6 +31,13 @@ I keep having to write around the `fs` module:
 - readFile
 - readTextFile
   - because I keep having to specify the options and I often want text files, not buffers
+- readJson<T>
+  - attempts to read the provided file path and parse to json
+  - without extra options provided:
+    - returns undefined when the file doesn't exist or can't be read
+    - returns null when the file can be read, but the contents can't be parsed as JSON
+    - returns the parsed object, cast to T for typescript, when the file is read and parsed
+  - pass in an extra { throw: true } parameter to raise these conditions as errors
 - rename
   - attempt to rename a file or folder, with retry
   - if `force` is specified, will remove the target if it already exists

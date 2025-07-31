@@ -60,6 +60,11 @@ export function readTextFileSync(at: string): string {
     return readFileSync(at, textOptions).toString();
 }
 
+/**
+ * Reads the file synchronously
+ * @param at
+ * @param opts
+ */
 export function readFileSync(at: string, opts?: ReadFileOptions | null): Buffer {
     return fs.readFileSync(at, opts as any /* looks like something is up with typings, gonna force it */);
 }
@@ -1045,6 +1050,45 @@ export async function readJson<T>(
     let contents: string;
     try {
         contents = await readTextFile(filePath)
+    } catch (e: any) {
+        if (options.throw) {
+            throw new Error(
+                `unable to read file at '${filePath}': ${e}`
+            );
+        }
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(contents) as T
+    } catch (e: any) {
+        if (options.throw) {
+            throw new Error(
+                `invalid json in file '${filePath}': ${e}`
+            );
+        }
+        return null;
+    }
+}
+export function readJsonSync<T>(
+    filePath: string,
+    opts?: ReadJsonOptions
+): T | undefined | null {
+    const options = {
+        ...defaultReadJsonOptions,
+        ...opts
+    };
+    if (!fileExistsSync(filePath)) {
+        if (options.throw) {
+            throw new Error(
+                `file not found: ${filePath}`
+            );
+        }
+        return undefined;
+    }
+    let contents: string;
+    try {
+        contents = readTextFileSync(filePath)
     } catch (e: any) {
         if (options.throw) {
             throw new Error(
