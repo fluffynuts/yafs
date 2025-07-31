@@ -1017,3 +1017,51 @@ function rmdirInternal(at: string, opts: RmOptions): Promise<void> {
         }
     });
 }
+
+export interface ReadJsonOptions {
+    throw?: boolean;
+}
+
+const defaultReadJsonOptions: ReadJsonOptions = {
+    throw: false
+}
+
+export async function readJson<T>(
+    filePath: string,
+    opts?: ReadJsonOptions
+): Promise<T | undefined | null> {
+    const options = {
+        ...defaultReadJsonOptions,
+        ...opts
+    };
+    if (!await fileExists(filePath)) {
+        if (options.throw) {
+            throw new Error(
+                `file not found: ${filePath}`
+            );
+        }
+        return undefined;
+    }
+    let contents: string;
+    try {
+        contents = await readTextFile(filePath)
+    } catch (e: any) {
+        if (options.throw) {
+            throw new Error(
+                `unable to read file at '${filePath}': ${e}`
+            );
+        }
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(contents) as T
+    } catch (e: any) {
+        if (options.throw) {
+            throw new Error(
+                `invalid json in file '${filePath}': ${e}`
+            );
+        }
+        return null;
+    }
+}
