@@ -4,7 +4,6 @@ const mockFs = {
 };
 jest.doMock("../src/fs", () => mockFs);
 import "expect-even-more-jest";
-import * as fs from "fs";
 import {chmod, chmodSync} from "../src";
 import {faker} from "@faker-js/faker";
 
@@ -45,7 +44,7 @@ describe(`chmod`, () => {
                 .toHaveBeenCalledOnceWith(
                     file,
                     mode,
-                    jasmine.any(Function)
+                    expect.any(Function)
                 );
             expect(mockFs.chmodSync)
                 .not.toHaveBeenCalled();
@@ -66,7 +65,7 @@ describe(`chmod`, () => {
                 .toHaveBeenCalledOnceWith(
                     file,
                     mode,
-                    jasmine.any(Function)
+                    expect.any(Function)
                 );
             expect(mockFs.chmodSync)
                 .not.toHaveBeenCalled();
