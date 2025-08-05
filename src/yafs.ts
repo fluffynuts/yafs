@@ -1159,14 +1159,13 @@ export function readJsonSync<T>(
 }
 
 export async function touch(filePath: string): Promise<void> {
-    const now = Date.now();
     if (await fileExists(filePath)) {
         const st = await stat(filePath);
         if (!st) {
             throw new Error(`Unable to stat the file at: '${filePath}'`);
         }
         return new Promise((resolve, reject) => {
-            fs.utimes(filePath, st.ctime, now, err => {
+            fs.utimes(filePath, st.ctimeMs / 1000, new Date(), err => {
                 return err
                     ? reject(err)
                     : resolve()
@@ -1178,13 +1177,12 @@ export async function touch(filePath: string): Promise<void> {
 }
 
 export function touchSync(filePath: string): void {
-    const now = Date.now();
     if (fileExistsSync(filePath)) {
         const st = statSync(filePath);
         if (!st) {
             throw new Error(`Unable to stat the file at: '${filePath}'`);
         }
-        fs.utimesSync(filePath, st.ctime, now);
+        fs.utimesSync(filePath, st.ctimeMs / 1000, new Date());
     } else {
         writeFileSync(filePath, "");
     }

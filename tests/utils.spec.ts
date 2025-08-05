@@ -145,10 +145,11 @@ describe(`utils`, () => {
             expect(fullPath)
                 .toHaveContents(expected);
             const stAfter = await stat(fullPath);
-            expect(stBefore!.mtime.getTime())
-                .toBeLessThan(stAfter!.mtime.getTime());
+            expect(stBefore!.mtimeMs)
+                .toBeLessThan(stAfter!.mtimeMs);
         });
     });
+
     describe(`touchSync`, () => {
         it(`should create the empty file in an existing folder`, async () => {
             // Arrange
@@ -225,14 +226,21 @@ describe(`utils`, () => {
                 .toBeFile();
             const stBefore = await stat(fullPath);
             await sleep(1000);
+            expect(stBefore!.ctimeMs)
+                .toBeLessThanOrEqual(Date.now());
+            expect(stBefore!.mtimeMs)
+                .toBeLessThan(Date.now());
+            await sleep(1000);
             // Act
             touchSync(fullPath);
             // Assert
             expect(fullPath)
                 .toHaveContents(expected);
             const stAfter = await stat(fullPath);
-            expect(stBefore!.mtime.getTime())
-                .toBeLessThan(stAfter!.mtime.getTime());
+            expect(stBefore!.mtimeMs)
+                .toBeLessThan(stAfter!.mtimeMs);
+            expect(stAfter!.mtimeMs)
+                .toBeLessThan(Date.now());
         });
     });
 
