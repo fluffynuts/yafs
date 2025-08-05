@@ -18,7 +18,7 @@ jobs:
           node-version: '14'
       - name: Build and test
         run: |
-          npm ci
+          npm i
           npm test
   test-node20:
     needs: [test-node14]
