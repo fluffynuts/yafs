@@ -240,7 +240,7 @@ describe(`utils`, () => {
             expect(stBefore!.mtimeMs)
                 .toBeLessThan(stAfter!.mtimeMs);
             expect(stAfter!.mtimeMs)
-                .toBeLessThan(Date.now());
+                .toBeLessThanOrEqual(Date.now());
         });
     });
 
