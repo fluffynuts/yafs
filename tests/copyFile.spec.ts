@@ -5,7 +5,8 @@ import {
     copyFile,
     CopyFileOptions,
     readTextFile,
-    writeTextFile
+    writeTextFile,
+    ls
 } from "../src";
 import * as path from "path";
 
@@ -129,6 +130,68 @@ describe(`copyFile`, () => {
                     await sandbox.mkdir(targetName)
                     // Act
                     await copyFile(sourcePath, targetPath);
+                    // Assert
+                    expect(targetFileName)
+                        .toBeFile();
+                });
+            });
+        });
+
+        describe(`when target ends with directory separator`, () => {
+            describe(`and is platform separator (${path.sep})`, () => {
+                it(`should copy the file with the same name to the target folder`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        sourceName = faker.string.alphanumeric(10),
+                        sourcePath = sandbox.fullPathFor(sourceName),
+                        sourceData = faker.word.sample(3),
+                        targetName = `${faker.string.alphanumeric(10)}${path.sep}`,
+                        targetPath = sandbox.fullPathFor(targetName),
+                        targetFileName = path.join(targetPath, sourceName);
+                    await sandbox.writeFile(sourcePath, sourceData);
+                    // Act
+                    await copyFile(sourcePath, targetPath);
+                    // Assert
+                    expect(targetFileName)
+                        .toBeFile();
+                });
+            });
+            describe(`and is windows separator (\\)`, () => {
+                it(`should copy the file with the same name to the target folder`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        sourceName = "source-file", // faker.string.alphanumeric(10),
+                        sourcePath = sandbox.fullPathFor(sourceName),
+                        sourceData = faker.word.sample(3),
+                        targetFolder = "targetFolder", // faker.string.alphanumeric(10),
+                        targetName = `${targetFolder}\\`,
+                        targetPath = sandbox.fullPathFor(targetFolder),
+                        targetFileName = path.join(targetPath, sourceName);
+                    await sandbox.writeFile(sourcePath, sourceData);
+                    // Act
+                    await copyFile(sourcePath, sandbox.fullPathFor(targetName));
+                    // Assert
+                    expect(targetFileName)
+                        .toBeFile();
+                });
+            });
+            describe(`and is unixy separator (/)`, () => {
+                it(`should copy the file with the same name to the target folder`, async () => {
+                    // Arrange
+                    const
+                        sandbox = await Sandbox.create(),
+                        sourceName = "source-file", // faker.string.alphanumeric(10),
+                        sourcePath = sandbox.fullPathFor(sourceName),
+                        sourceData = faker.word.sample(3),
+                        targetFolder = "targetFolder", // faker.string.alphanumeric(10),
+                        targetName = `${targetFolder}/`,
+                        targetPath = sandbox.fullPathFor(targetFolder),
+                        targetFileName = path.join(targetPath, sourceName);
+                    await sandbox.writeFile(sourcePath, sourceData);
+                    // Act
+                    await copyFile(sourcePath, sandbox.fullPathFor(targetName));
                     // Assert
                     expect(targetFileName)
                         .toBeFile();

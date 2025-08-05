@@ -853,19 +853,66 @@ async function cpRecursiveManually(
     });
 }
 
+const directorySeparators = new Set<string>([
+    path.sep,
+    "/",
+    "\\"
+]);
+
+function stringify(value: string | undefined | null): string {
+    if (value === undefined) {
+        return "undefined";
+    }
+    if (value === null) {
+        return "null";
+    }
+    return `'${value}'`;
+}
+
+function endsWithDirectorySeparatorChar(p: string): boolean {
+    for (const item of directorySeparators) {
+        if (p.endsWith(item)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function stripTrailingDirectorySeparatorCharsFrom(p: string): string {
+    if (!p) {
+        return `${p}`;
+    }
+    let result = p;
+    do {
+        for (const sep of directorySeparators) {
+            if (result.endsWith(sep)) {
+                result = result.slice(0, result.length - sep.length);
+            }
+        }
+    } while (endsWithDirectorySeparatorChar(result));
+    return result;
+}
 
 export async function copyFile(
     src: string,
     target: string,
     options?: CopyFileOptions
 ): Promise<void> {
+    if (!target) {
+        throw new Error(`target not specified (received: ${stringify(target)})`);
+    }
     options = options ?? CopyFileOptions.errorOnExisting;
     if (!(await fileExists(src))) {
         throw new Error(`file not found at '${src}'`);
     }
+    if (endsWithDirectorySeparatorChar(target)) {
+        const toCreate = stripTrailingDirectorySeparatorCharsFrom(target);
+        await mkdir(toCreate);
+        target = toCreate;
+    }
     if (await folderExists(target)) {
-        const baseName = path.basename(src);
-        target = path.join(target, baseName);
+        const container = path.basename(src);
+        target = path.join(target, container);
     }
     if (options !== CopyFileOptions.overwriteExisting &&
         await fileExists(target)) {
@@ -1070,6 +1117,7 @@ export async function readJson<T>(
         return null;
     }
 }
+
 export function readJsonSync<T>(
     filePath: string,
     opts?: ReadJsonOptions
@@ -1109,3 +1157,49 @@ export function readJsonSync<T>(
         return null;
     }
 }
+
+export async function touch(filePath: string): Promise<void> {
+    const now = Date.now();
+    if (await fileExists(filePath)) {
+        const st = await stat(filePath);
+        if (!st) {
+            throw new Error(`Unable to stat the file at: '${filePath}'`);
+        }
+        return new Promise((resolve, reject) => {
+            fs.utimes(filePath, st!.ctime, now, err => {
+                return err
+                    ? reject(err)
+                    : resolve()
+            });
+        });
+
+    } else {
+        await writeFile(filePath, "");
+    }
+}
+
+export type StringOrArrayOfString = string | string[];
+
+export function joinPath(...parts: StringOrArrayOfString[]): string {
+    const collected: string[] = [];
+    for (const part of parts) {
+        if (Array.isArray(part)) {
+            collected.push(...part);
+        } else {
+            collected.push(part);
+        }
+    }
+    return path.join(...collected);
+}
+
+export function fileName(filePath: string): string {
+    return path.basename(filePath);
+}
+
+export const baseName = fileName;
+
+export function folderName(filePath: string): string {
+    return path.dirname(filePath);
+}
+
+export const dirName = folderName;
