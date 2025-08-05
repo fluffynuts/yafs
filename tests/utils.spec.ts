@@ -1,5 +1,14 @@
 import "expect-even-more-jest";
-import { touch, stat, joinPath, fileName, folderName, baseName, dirName } from "../src";
+import {
+    touch,
+    stat,
+    joinPath,
+    fileName,
+    folderName,
+    baseName,
+    dirName,
+    touchSync
+} from "../src";
 import { Sandbox } from "filesystem-sandbox";
 import { fakerEN as faker } from "@faker-js/faker";
 import * as path from "path";
@@ -132,6 +141,92 @@ describe(`utils`, () => {
             await sleep(1000);
             // Act
             await touch(fullPath);
+            // Assert
+            expect(fullPath)
+                .toHaveContents(expected);
+            const stAfter = await stat(fullPath);
+            expect(stBefore!.mtime.getTime())
+                .toBeLessThan(stAfter!.mtime.getTime());
+        });
+    });
+    describe(`touchSync`, () => {
+        it(`should create the empty file in an existing folder`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                expected = sandbox.fullPathFor(
+                    faker.system.fileName()
+                );
+            expect(expected)
+                .not.toBeFile();
+            expect(expected)
+                .not.toBeFolder();
+
+            // Act
+            touchSync(expected);
+
+            // Assert
+            expect(expected)
+                .not.toBeFolder();
+            expect(expected)
+                .toBeFile();
+            const st = await stat(expected);
+            expect(st)
+                .toExist();
+            expect(st!.size)
+                .toEqual(0);
+        });
+
+        it(`should create required supporting folder structure`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                folder = joinPath(
+                    faker.word.sample(),
+                    faker.word.sample()
+                ),
+                relativePath = joinPath(
+                    folder,
+                    faker.system.fileName()
+                ),
+                expected = sandbox.fullPathFor(
+                    relativePath
+                );
+            expect(expected)
+                .not.toBeFile();
+            expect(expected)
+                .not.toBeFolder();
+
+            // Act
+            touchSync(expected);
+
+            // Assert
+            expect(expected)
+                .not.toBeFolder();
+            expect(expected)
+                .toBeFile();
+            const st = await stat(expected);
+            expect(st)
+                .toExist();
+            expect(st!.size)
+                .toEqual(0);
+        });
+
+        it(`should not trash an existing file`, async () => {
+            // Arrange
+            const
+                sandbox = await Sandbox.create(),
+                expected = faker.word.words(),
+                fullPath = await sandbox.writeFile(
+                    faker.system.fileName(),
+                    expected
+                );
+            expect(fullPath)
+                .toBeFile();
+            const stBefore = await stat(fullPath);
+            await sleep(1000);
+            // Act
+            touchSync(fullPath);
             // Assert
             expect(fullPath)
                 .toHaveContents(expected);

@@ -111,7 +111,7 @@ export async function writeFile(
 
 export function writeFileSync(
     at: string,
-    contents: Buffer,
+    contents: Buffer | string,
     options?: WriteFileOptions
 ) {
     mkdirSync(path.dirname(at));
@@ -1166,15 +1166,27 @@ export async function touch(filePath: string): Promise<void> {
             throw new Error(`Unable to stat the file at: '${filePath}'`);
         }
         return new Promise((resolve, reject) => {
-            fs.utimes(filePath, st!.ctime, now, err => {
+            fs.utimes(filePath, st.ctime, now, err => {
                 return err
                     ? reject(err)
                     : resolve()
             });
         });
-
     } else {
         await writeFile(filePath, "");
+    }
+}
+
+export function touchSync(filePath: string): void {
+    const now = Date.now();
+    if (fileExistsSync(filePath)) {
+        const st = statSync(filePath);
+        if (!st) {
+            throw new Error(`Unable to stat the file at: '${filePath}'`);
+        }
+        fs.utimesSync(filePath, st.ctime, now);
+    } else {
+        writeFileSync(filePath, "");
     }
 }
 
