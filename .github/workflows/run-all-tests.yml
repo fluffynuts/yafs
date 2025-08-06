@@ -5,9 +5,6 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
-# I've avoided matrix here because it looks
-# like the parallel jobs don't run in isolation
-# and then they interfere with each other
 jobs:
   test-node14:
     runs-on: ubuntu-latest
@@ -17,6 +14,11 @@ jobs:
         with:
           node-version: '14'
       - name: Build and test
+        # node 14 doesn't deal with the newer package-lock
+        # so we have to forgo predictable module installation
+        # for running tests, otherwise package imports fail
+        # with messages like:
+        # cannot read property '@faker-js/faker' of undefined
         run: |
           npm i
           npm test
