@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "pretest": "rimraf .jest-cache",
+    "posttest": "rimraf .jest-cache",
     "test-build": "tsc --noEmit",
     "test": "jest",
     "autotest-once": "run-s clear-console test",
