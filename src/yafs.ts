@@ -15,7 +15,8 @@ interface ReadFileOptions {
  * @param at
  * @param opts
  */
-export function readFile(at: string, opts?: ReadFileOptions): Promise<Buffer> {
+export async function readFile(at: string, opts?: ReadFileOptions): Promise<Buffer> {
+    await verifyPathIsFile(at);
     return new Promise((resolve, reject) => {
         if (opts) {
             fs.readFile(at, opts as any, (err, data) => {
@@ -29,13 +30,32 @@ export function readFile(at: string, opts?: ReadFileOptions): Promise<Buffer> {
     })
 }
 
+async function verifyPathIsFile(at: string): Promise<void> {
+    if (await folderExists(at)) {
+        throw new Error(`Can't read folder '${at}' as a file`);
+    }
+    if (!await fileExists(at)) {
+        throw new Error(`File not found: '${at}`);
+    }
+}
+
+function verifyPathIsFileSync(at: string): void {
+    if (folderExistsSync(at)) {
+        throw new Error(`Can't read folder '${at}' as a file`);
+    }
+    if (!fileExistsSync(at)) {
+        throw new Error(`File not found: '${at}`);
+    }
+}
+
 /**
  *
  * Reads the text file at the given location with the provided contents
  * - will create any required supporting folders
  * @param at
  */
-export function readTextFile(at: string): Promise<string> {
+export async function readTextFile(at: string): Promise<string> {
+    await verifyPathIsFile(at);
     return new Promise((resolve, reject) => {
         fs.readFile(at, textOptions, (err: NodeJS.ErrnoException | null, data: string) => {
             return err
@@ -66,6 +86,7 @@ export function readTextFileSync(at: string): string {
  * @param opts
  */
 export function readFileSync(at: string, opts?: ReadFileOptions | null): Buffer {
+    verifyPathIsFileSync(at);
     return fs.readFileSync(at, opts as any /* looks like something is up with typings, gonna force it */);
 }
 

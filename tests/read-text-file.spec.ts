@@ -32,7 +32,7 @@ describe(`fs-utils`, () => {
                 // Act
                 await expect(
                     readTextFile(fpath)
-                ).rejects.toThrow(/ENOENT/);
+                ).rejects.toThrow(new RegExp(`File not found.*${fpath}`));
                 // Assert
             });
         });
@@ -56,7 +56,7 @@ describe(`fs-utils`, () => {
         });
 
         describe(`when the file does not exist`, () => {
-            it(`should throw, as per regular fs`, async () => {
+            it(`should throw with useful info`, async () => {
                 // Arrange
                 const
                     sandbox = await Sandbox.create(),
@@ -65,7 +65,7 @@ describe(`fs-utils`, () => {
                 // Act
                 expect(
                     () => readTextFileSync(fpath)
-                ).toThrow(/ENOENT/);
+                ).toThrow(new RegExp(`File not found.*${fpath}`));
                 // Assert
             });
         });
@@ -119,6 +119,33 @@ line 2
                         ""
                     ]);
             });
+        });
+    });
+
+    describe(`when provided path is a folder`, () => {
+        it(`should throw with message including path`, async () => {
+            // Arrange
+            const sandbox = await Sandbox.create();
+            // Act
+            await expect(readTextFile(sandbox.path))
+                .rejects.toThrow(
+                    new RegExp(
+                        `Can't read folder.*${sandbox.path}`
+                    )
+                );
+            // Assert
+        });
+        it(`should throw with message including path (sync)`, async () => {
+            // Arrange
+            const sandbox = await Sandbox.create();
+            // Act
+            expect(() => readTextFileSync(sandbox.path))
+                .toThrow(
+                    new RegExp(
+                        `Can't read folder.*${sandbox.path}`
+                    )
+                );
+            // Assert
         });
     });
 });
