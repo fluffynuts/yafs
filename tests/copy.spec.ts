@@ -6,6 +6,9 @@ import { CopyFileOptions, cp, readTextFile } from "../src";
 
 
 describe(`cp`, () => {
+    afterEach(async () => {
+       await Sandbox.destroyAll();
+    });
     it(`should copy the single file`, async () => {
         // Arrange
         const
@@ -100,5 +103,32 @@ describe(`cp`, () => {
         const contents = await readTextFile(targetFile);
         expect(contents)
             .toEqual(sourceContents);
+    });
+
+    it("should create any required supporting folders", async () => {
+        // Arrange
+        const
+            sandbox = await Sandbox.create(),
+            srcFolder = "folder1/sub1",
+            fileName = faker.system.fileName(),
+            src = await sandbox.mkdir(srcFolder),
+            srcContents = randomSentence(),
+            srcFile = await sandbox.writeFile(`${srcFolder}/${fileName}`, srcContents),
+            targetFolder = "folder2/sub2",
+            targetFile = sandbox.fullPathFor(`${targetFolder}/${fileName}`)
+        expect(targetFile)
+            .not.toBeFile();
+        expect(srcFile)
+            .toBeFile();
+
+        // Act
+        await cp(srcFile, targetFile);
+
+        // Assert
+        expect(targetFile)
+            .toBeFile();
+        const contents = await readTextFile(targetFile);
+        expect(contents)
+            .toEqual(srcContents);
     });
 });

@@ -939,6 +939,10 @@ export async function copyFile(
         await fileExists(target)) {
         throw new Error(`target already exists at '${target}'`);
     }
+    const targetBase = dirName(target);
+    if (!(await folderExists(targetBase))) {
+        await mkdir(targetBase);
+    }
     return new Promise((resolve, reject) => {
         fs.copyFile(src, target, err => {
             return err
