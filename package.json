@@ -1,6 +1,6 @@
 {
   "name": "yafs",
-  "version": "1.49.2",
+  "version": "1.50.0",
   "description": "Yet Another FileSystem Abstraction",
   "main": "dist/index.js",
   "scripts": {
