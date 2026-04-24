@@ -736,23 +736,13 @@ export function rmdirSync(at: string, options?: RmOptions): void {
     }
     const recursive = options?.recurse ?? false;
     const retries = options?.retries ?? rmRetries;
-    if (recursive) {
-        fs.rmSync(
-            at,
-            {
-                maxRetries: retries,
-                recursive
-            }
-        );
-    } else {
-        fs.rmdirSync(
-            at,
-            {
-                maxRetries: retries,
-                recursive
-            }
-        );
-    }
+    fs.rmSync(
+        at,
+        {
+            maxRetries: retries,
+            recursive
+        }
+    );
 }
 
 async function deltree(at: string): Promise<void> {
