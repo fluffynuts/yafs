@@ -42,7 +42,7 @@
     "@types/minimatch": "^5.1.2",
     "console-cls": "^1.2.2",
     "cross-env": "^7.0.2",
-    "expect-even-more-jest": "^1.29.5",
+    "expect-even-more-jest": "^1.30.0",
     "filesystem-sandbox": "^1.29.0",
     "gulp-cli": "^3.1.0",
     "jest": "^28.1.3",
