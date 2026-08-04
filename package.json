@@ -4,9 +4,10 @@
   "description": "Yet Another FileSystem Abstraction",
   "main": "dist/index.js",
   "scripts": {
-    "pretest": "rimraf .jest-cache",
-    "posttest": "rimraf .jest-cache",
+    "pretest": "run-p clear-cache lint",
+    "posttest": "run-s clear-cache",
     "test-build": "tsc --noEmit",
+    "clear-cache": "rimraf .jest-cache",
     "test": "jest",
     "autotest-once": "run-s clear-console test",
     "autotest": "nodemon -w . -e ts -x \"npm run autotest-once\"",

@@ -745,18 +745,26 @@ export function rmdirSync(at: string, options?: RmOptions): void {
     );
 }
 
-async function deltree(at: string): Promise<void> {
+async function deltree(at: string, retries: number = 10): Promise<void> {
+    if (await folderExists(at)) {
+        await new Promise(resolve => fs.rm(at, { recursive: true, maxRetries: retries }, resolve));
+        return;
+    }
+    const opts: RmOptions = {
+        recurse: true,
+        retries: retries ?? 10
+    };
     const contents = await ls(at, { recurse: true });
     contents.sort().reverse();
     for (const p of contents) {
         const fullPath = path.join(at, p);
         if (await folderExists(fullPath)) {
-            await rmdir(fullPath);
+            await rmdir(fullPath, opts);
         } else {
             await rm(fullPath);
         }
     }
-    await rmdir(at);
+    await rmdir(at, opts);
 }
 
 export async function rename(
